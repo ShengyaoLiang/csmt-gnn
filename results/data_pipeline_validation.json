@@ -1,0 +1,44 @@
+{
+  "purpose": "CSMT-GNN data pipeline preflight; run before --no-input-range-validation",
+  "data_path": "tmp\\cvd_mask_audit\\tokens",
+  "ast_path": "tmp\\cvd_mask_audit\\ast",
+  "vocab_size": 128,
+  "num_ast_types": 24,
+  "block_size": 8,
+  "max_tokens": 64,
+  "samples_checked": 3,
+  "samples_with_errors": 0,
+  "ok": true,
+  "reports": [
+    {
+      "prefix": "0_shadowing",
+      "token_length": 34,
+      "used_length": 34,
+      "required_blocks": 5,
+      "ast_blocks": 5,
+      "mask_width": 34,
+      "status": "ok",
+      "issues": []
+    },
+    {
+      "prefix": "1_long_range_import",
+      "token_length": 30,
+      "used_length": 30,
+      "required_blocks": 4,
+      "ast_blocks": 4,
+      "mask_width": 30,
+      "status": "ok",
+      "issues": []
+    },
+    {
+      "prefix": "2_guarded_attribute",
+      "token_length": 34,
+      "used_length": 34,
+      "required_blocks": 5,
+      "ast_blocks": 5,
+      "mask_width": 34,
+      "status": "ok",
+      "issues": []
+    }
+  ]
+}

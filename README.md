@@ -175,6 +175,14 @@ For curated NumPy pipelines that have already been validated, `train.py` also
 offers `--no-input-range-validation` to skip per-forward token/AST id range
 scans. Shape, dtype, and sequence-length checks remain active.
 
+Validate paired token and AST arrays before using that training fast path:
+
+```powershell
+python scripts\validate_data_pipeline.py --data-path tokenized_data `
+  --ast-path ast_data --vocab-size 50000 --block-size 64 --max-tokens 2048 `
+  --output results\data_pipeline_validation.json
+```
+
 Run the tiny diagnostic training sanity check when PyTorch is installed:
 
 ```powershell

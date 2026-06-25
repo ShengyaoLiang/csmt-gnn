@@ -1,6 +1,6 @@
 {
   "package": "csmt-gnn-github-release",
-  "built_at_utc": "2026-06-25T08:54:52.331246+00:00",
+  "built_at_utc": "2026-06-25T09:17:16.825979+00:00",
   "purpose": "public release package accompanying the arXiv preprint",
   "target": "arXiv public preprint",
   "files": [
@@ -28,6 +28,7 @@
     "results/block_sweep_b4.json",
     "results/block_sweep_b8.json",
     "results/cvd_mask_audit.json",
+    "results/data_pipeline_validation.json",
     "results/diagnostic_poc_lowcompute.json",
     "results/diagnostic_poc_transformer.json",
     "results/diagnostic_poc_transformer_b16.json",
@@ -50,9 +51,11 @@
     "scripts/diagnostic_poc_train.py",
     "scripts/prefix_ast_degradation.py",
     "scripts/structural_probe_eval.py",
+    "scripts/validate_data_pipeline.py",
     "tests/test_architecture_cost_table.py",
     "tests/test_ast_definition_masks.py",
     "tests/test_csmt_shapes.py",
+    "tests/test_validate_data_pipeline.py",
     "train.py",
     "transformer_baseline.py"
   ]

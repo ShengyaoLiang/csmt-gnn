@@ -59,6 +59,8 @@ rewrite.
   `train.py --no-input-range-validation` can skip those large-tensor scans after
   the data pipeline has been checked; dtype, shape, and length validation remain
   active.
+- `scripts/validate_data_pipeline.py` performs that one-time NumPy preflight
+  over token ids, AST ids, AST block shapes, masks, and usable sequence lengths.
 - Shared two-dimensional AST ids and definition masks can be broadcast across a
   batch, matching the documented single-example feature format.
 - AST pooling handles all-padding blocks without producing NaNs.
@@ -98,7 +100,7 @@ rewrite.
 ## Minimal Checks
 
 ```powershell
-python -m py_compile ast_preprocessor.py csmt_gnn.py transformer_baseline.py train.py inference_ast.py diagnostics.py scripts\architecture_cost_table.py scripts\prefix_ast_degradation.py scripts\structural_probe_eval.py scripts\cvd_mask_audit.py scripts\diagnostic_poc_train.py scripts\build_github_release_package.py scripts\build_arxiv_package.py
+python -m py_compile ast_preprocessor.py csmt_gnn.py transformer_baseline.py train.py inference_ast.py diagnostics.py scripts\architecture_cost_table.py scripts\prefix_ast_degradation.py scripts\structural_probe_eval.py scripts\cvd_mask_audit.py scripts\validate_data_pipeline.py scripts\diagnostic_poc_train.py scripts\build_github_release_package.py scripts\build_arxiv_package.py
 python scripts\build_arxiv_package.py
 python scripts\build_github_release_package.py
 ```
@@ -112,6 +114,7 @@ python inference_ast.py --source-file tmp\diagnostics\prefix_probe.py --block-si
 python scripts\prefix_ast_degradation.py --source-file tmp\diagnostics\prefix_probe.py --block-size 8 --max-tokens 64 --repeat 1
 python scripts\architecture_cost_table.py --output results\architecture_cost_table.json
 python scripts\structural_probe_eval.py --output results\structural_probe_eval.json --block-size 8 --max-tokens 64
+python scripts\validate_data_pipeline.py --data-path tmp\diagnostics\tokens --ast-path tmp\diagnostics\ast --vocab-size 128 --block-size 8 --max-tokens 64
 python -m unittest discover -s tests -v
 ```
 

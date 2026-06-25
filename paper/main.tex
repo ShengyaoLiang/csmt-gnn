@@ -391,6 +391,9 @@ My cleaned implementation is organized around small, auditable entry points:
   paired token and AST NumPy files.  Input id range scans are enabled by
   default for fail-fast debugging, but can be disabled after the NumPy pipeline
   is validated; dtype, shape, and length checks remain active.
+  \item \texttt{scripts/validate\_data\_pipeline.py} is the NumPy preflight
+  check for that validated-pipeline fast path: it scans token ids, AST ids,
+  block shapes, masks, and usable lengths before training.
   \item \texttt{scripts/diagnostic\_poc\_train.py} trains an ablation matrix on
   the diagnostic cases when PyTorch is available.
 \end{itemize}
@@ -1000,6 +1003,7 @@ The source tree contains:
   \item \texttt{diagnostics.py}: tiny structural diagnostic data generator.
   \item \texttt{scripts/structural\_probe\_eval.py}: definition-use coverage check for the diagnostic cases.
   \item \texttt{scripts/cvd\_mask\_audit.py}: CVD eligible/sampled block audit.
+  \item \texttt{scripts/validate\_data\_pipeline.py}: NumPy token/AST preflight before training fast paths.
   \item \texttt{scripts/diagnostic\_poc\_train.py}: tiny ablation sanity check.
   \item \texttt{transformer\_baseline.py}: independent token-only Transformer
   baseline for the diagnostic comparison.
@@ -1096,9 +1100,11 @@ On my local laptop, I ran this diagnostic at
 \texttt{hidden\_size=16}, \texttt{max\_tokens=64}, and 12 steps per variant,
 plus small block-size and seed smoke sweeps.  The diagnostic now includes a pure
 token-only Transformer and a rough parameter-neighbor Transformer control.  The
-unit tests passed at 33/33 after adding fail-fast checks for the Transformer
+unit tests passed at 36/36 after adding fail-fast checks for the Transformer
 controls, incremental AST configuration checks, opt-in CVD audit coverage, and
-validated-pipeline input range controls.
+validated-pipeline input range controls.  The data-pipeline preflight also
+passed on the tiny diagnostic arrays, checking token ids, AST ids, block shapes,
+masks, and usable sequence lengths.
 The structural probe found cross-block definition-use pairs in all three
 diagnostic cases.  The CVD audit recorded 72 variable-eligible blocks and 112
 random-control eligible blocks over 24 audited steps, with both sampling rates

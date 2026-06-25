@@ -24,6 +24,7 @@ This folder is now organized around the arXiv-first release:
 - Architecture cost audit: `results/architecture_cost_table.json`
 - Structural probe result: `results/structural_probe_eval.json`
 - CVD mask audit: `results/cvd_mask_audit.json`
+- Data pipeline preflight: `results/data_pipeline_validation.json`
 - Transformer comparison diagnostic: `results/diagnostic_poc_transformer.json`
 
 ## Important
@@ -55,6 +56,9 @@ python scripts\structural_probe_eval.py --output results\structural_probe_eval.j
   --block-size 8 --max-tokens 64
 python scripts\cvd_mask_audit.py --output results\cvd_mask_audit.json `
   --steps 24 --hidden-size 16 --ast-dim 8 --block-size 8 --max-tokens 64
+python scripts\validate_data_pipeline.py --data-path tmp\cvd_mask_audit\tokens `
+  --ast-path tmp\cvd_mask_audit\ast --vocab-size 128 --block-size 8 `
+  --max-tokens 64 --output results\data_pipeline_validation.json
 python scripts\diagnostic_poc_train.py --output results\diagnostic_poc_transformer.json `
   --steps 12 --hidden-size 16 --ast-dim 8 --block-size 8 --max-tokens 64
 ```

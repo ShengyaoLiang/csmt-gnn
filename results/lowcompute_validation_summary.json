@@ -10,7 +10,8 @@
   },
   "stage0": {
     "py_compile": "passed",
-    "unit_tests": "33/33 passed with PyTorch CPU after CVD audit and input-range fast-path hardening",
+    "unit_tests": "36/36 passed with PyTorch CPU after CVD audit, input-range fast-path, and data-pipeline preflight hardening",
+    "data_pipeline_preflight": "passed on 3 tiny diagnostic samples; token ids, AST ids, AST block shapes, masks, and usable lengths were valid",
     "definition_mask_tests": "passed; assignment, parameters, imports, attributes, destructuring, for-targets, and use-only negatives covered",
     "structural_probe_eval": {
       "purpose": "structural diagnostic coverage; not model accuracy",

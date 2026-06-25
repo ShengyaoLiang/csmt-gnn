@@ -14,9 +14,11 @@ This is a local mechanism-check record, not a benchmark result.
 ## Stage 0
 
 - `py_compile`: passed
-- Unit tests: 33/33 passed with PyTorch CPU after adding fail-fast Transformer
+- Unit tests: 36/36 passed with PyTorch CPU after adding fail-fast Transformer
   baseline checks, incremental AST configuration checks, and opt-in CVD audit
   coverage plus validated-pipeline input range controls
+- Data pipeline preflight: passed on 3 tiny diagnostic samples; token ids, AST
+  ids, AST block shapes, masks, and usable lengths were valid
 - Definition-mask tests: passed; assignment, parameters, imports, attributes, destructuring, for-targets, and use-only negatives covered
 - Offline AST preprocessing now defaults to complete-file parsing; prefix parsing is explicit for inference/degradation checks
 - Prefix AST fallback_rate: 0.3846

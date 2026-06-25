@@ -43,6 +43,7 @@ RESULT_FILES = [
     "results/submission_status.json",
     "results/lowcompute_validation_summary.md",
     "results/lowcompute_validation_summary.json",
+    "results/data_pipeline_validation.json",
     "results/structural_probe_eval.json",
     "results/cvd_mask_audit.json",
     "results/architecture_cost_table.json",
