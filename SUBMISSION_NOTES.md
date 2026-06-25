@@ -51,12 +51,17 @@ The arXiv package includes `main.tex`, `main.bbl`, `references.bib`, and
 
 ## Public Code Package
 
+- Public repository: https://github.com/ShengyaoLiang/csmt-gnn.
+- Zenodo latest-record DOI: https://doi.org/10.5281/zenodo.20840625.
 - Builder: `python scripts\build_github_release_package.py`.
 - Output directory: `build/github_release/`.
 - Output zip: `build/csmt_gnn_github_release.zip`.
 
 This package is for the public arXiv/GitHub story. It keeps the author identity
-and the multi-LLM development narrative.
+and the multi-LLM development narrative. I release the source package, paper
+source, tests, small diagnostic artifacts, and packaging scripts so that the
+evidence chain can be inspected without relying on private training data,
+hidden scripts, or unpublished checkpoints.
 
 ## Current Commands
 

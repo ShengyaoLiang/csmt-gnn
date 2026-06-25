@@ -11,6 +11,13 @@ CSMT-GNN paper. It is not only a README and not only a paper. It is meant to be
 a complete package: paper source, reference code, diagnostic scripts, tests,
 submission notes, arXiv source packaging, and a public GitHub release builder.
 
+The public reproducibility repository is available at
+https://github.com/ShengyaoLiang/csmt-gnn. Archived releases are indexed under
+the Zenodo latest-record DOI https://doi.org/10.5281/zenodo.20840625. I release
+the source package, paper source, tests, small diagnostic artifacts, and
+packaging scripts so that the evidence chain can be inspected without relying
+on private training data, hidden scripts, or unpublished checkpoints.
+
 ## Scientific Position
 
 CSMT-GNN studies a narrow claim: code language models may preserve long-range
