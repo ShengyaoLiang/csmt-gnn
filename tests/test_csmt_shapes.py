@@ -129,6 +129,44 @@ class CSMTShapeTests(unittest.TestCase):
         logits = model(input_ids, ast_type_ids=ast, var_def_mask=mask, lengths=lengths)
         self.assertEqual(tuple(logits.shape), (2, 6, config.vocab_size))
 
+    def test_shared_ast_and_mask_inputs_broadcast_across_batch(self) -> None:
+        config = self.tiny_config()
+        model = CSMTModel(config)
+        input_ids = torch.tensor([[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]])
+        ast = torch.zeros(2, config.block_size, dtype=torch.long)
+        token_mask = torch.zeros(6, dtype=torch.bool)
+        logits = model(input_ids, ast_type_ids=ast, var_def_mask=token_mask, lengths=torch.tensor([6, 6]))
+        self.assertEqual(tuple(logits.shape), (2, 6, config.vocab_size))
+
+    def test_invalid_config_values_fail_early(self) -> None:
+        with self.assertRaisesRegex(ValueError, "hidden_size must be divisible"):
+            CSMTConfig(**{**self.tiny_config().__dict__, "hidden_size": 18, "num_heads": 4})
+        with self.assertRaisesRegex(ValueError, "kv_compression must be in"):
+            CSMTConfig(**{**self.tiny_config().__dict__, "kv_compression": 1.5})
+        with self.assertRaisesRegex(TypeError, "use_ast_gate must be a bool"):
+            CSMTConfig(**{**self.tiny_config().__dict__, "use_ast_gate": 1})
+
+    def test_invalid_forward_inputs_fail_early(self) -> None:
+        config = self.tiny_config()
+        model = CSMTModel(config)
+        with self.assertRaisesRegex(TypeError, "input_ids must contain"):
+            model(torch.tensor([[1.0, 2.0]]))
+        with self.assertRaisesRegex(ValueError, "input_ids ids must be"):
+            model(torch.tensor([[1, config.vocab_size]]))
+        with self.assertRaisesRegex(TypeError, "lengths must contain"):
+            model(torch.tensor([[1, 2, 3]]), lengths=torch.tensor([3.0]))
+        with self.assertRaisesRegex(ValueError, "lengths must be in"):
+            model(torch.tensor([[1, 2, 3]]), lengths=torch.tensor([4]))
+        with self.assertRaisesRegex(TypeError, "ast_type_ids must contain"):
+            model(torch.tensor([[1, 2, 3]]), ast_type_ids=torch.zeros(1, config.block_size))
+        with self.assertRaisesRegex(ValueError, "ast_type_ids ids must be"):
+            model(
+                torch.tensor([[1, 2, 3]]),
+                ast_type_ids=torch.full((1, config.block_size), config.num_ast_types, dtype=torch.long),
+            )
+        with self.assertRaisesRegex(TypeError, "var_def_mask must be"):
+            model(torch.tensor([[1, 2, 3]]), var_def_mask=torch.zeros(3, dtype=torch.float32))
+
     def test_ablation_toggles_preserve_forward_shape(self) -> None:
         toggle_sets = [
             {"use_ast_gate": False},
@@ -162,6 +200,17 @@ class CSMTShapeTests(unittest.TestCase):
         _, sampled = graph(z, var_def_mask=None, valid_block_mask=valid)
         self.assertIsNotNone(sampled)
         self.assertTrue(torch.equal(sampled, valid))
+
+    def test_variable_cvd_ignores_padding_blocks(self) -> None:
+        config = CSMTConfig(**{**self.tiny_config().__dict__, "cvd_prob": 1.0})
+        graph = PrefixBlockGraph(config)
+        graph.train()
+        z = torch.randn(1, 3, config.hidden_size)
+        var_defs = torch.tensor([[False, True, True]])
+        valid = torch.tensor([[True, True, False]])
+        _, sampled = graph(z, var_def_mask=var_defs, valid_block_mask=valid)
+        self.assertIsNotNone(sampled)
+        self.assertTrue(torch.equal(sampled, torch.tensor([[False, True, False]])))
 
     def test_no_moe_uses_dense_ffn(self) -> None:
         config = CSMTConfig(**{**self.tiny_config().__dict__, "use_moe": False})

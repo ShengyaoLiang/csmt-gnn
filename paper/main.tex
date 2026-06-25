@@ -361,8 +361,8 @@ Finally, the layer applies a residual top-$k$ MoE feed-forward module.  The
 reference code sorts token-expert assignments into contiguous expert batches,
 which avoids the earlier per-token dynamic dispatch pattern and is a reasonable
 fallback when vendor grouped GEMM kernels are not available.  The implementation
-also tracks a router load-balancing loss and a router z-loss; for large H100
-training, a grouped-GEMM expert kernel remains the right production target.
+also tracks a router load-balancing loss and a router z-loss; for production
+training, a grouped-GEMM expert kernel remains the right target.
 
 \section{Implementation and Development Workflow}
 
@@ -840,10 +840,11 @@ features and whether caching at block boundaries is enough.
 
 Finally, the architecture may simply be too expensive or too sensitive to the
 block size.  I added an initially-zero boundary mixing module to reduce hard
-cuts through syntax, but the right block size still has to be measured.  I like the idea, but
-liking an idea is not an argument for deploying it.  If the AST gate and block
-graph do not improve downstream reliability enough to justify their cost, the
-right conclusion is to simplify the model.
+cuts through syntax, but the right block size still has to be measured.  The
+design should survive cost-sensitive ablation before it is treated as a
+deployment candidate.  If the AST gate and block graph do not improve downstream
+reliability enough to justify their cost, the right conclusion is to simplify
+the model.
 
 \section{Broader Impact}
 

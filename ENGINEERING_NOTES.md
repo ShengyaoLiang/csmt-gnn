@@ -49,6 +49,10 @@ rewrite.
 - The model and trainer support true `[batch, tokens]` micro-batches.
 - The model now accepts true sequence lengths, so padding tokens do not become
   real block content.
+- Model inputs now fail early on invalid token ids, AST ids, mask dtypes, and
+  out-of-range lengths instead of silently clamping or truncating metadata.
+- Shared two-dimensional AST ids and definition masks can be broadcast across a
+  batch, matching the documented single-example feature format.
 - AST pooling handles all-padding blocks without producing NaNs.
 - Boundary-aware pooling is strictly causal: the first `boundary_width` tokens
   of a current block can read the previous block tail, but previous blocks
@@ -59,6 +63,8 @@ rewrite.
   feed-forward path.
 - CVD supports `cvd_scope=variable` and `cvd_scope=random`, so variable-targeted
   CVD can be compared with ordinary random block value replacement.
+- Variable-targeted CVD intersects definition masks with the valid-block mask,
+  so padded blocks cannot be sampled as definition-bearing messages.
 - The trainer computes next-token loss only over real, non-padding positions.
 - MoE fallback sorts top-k assignments into contiguous expert batches, skips
   absent experts, and exposes load-balancing/z-loss terms.

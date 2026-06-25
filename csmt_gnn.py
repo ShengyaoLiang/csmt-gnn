@@ -11,12 +11,42 @@ dispatch.
 from __future__ import annotations
 
 import math
+import numbers
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+
+_ID_DTYPES = {torch.int32, torch.int64}
+_MASK_DTYPES = {torch.bool, torch.uint8, torch.int8, torch.int16, torch.int32, torch.int64}
+
+
+def _is_real_number(value: object) -> bool:
+    return isinstance(value, numbers.Real) and not isinstance(value, bool) and math.isfinite(float(value))
+
+
+def _validate_id_tensor(name: str, tensor: torch.Tensor, upper_bound: int) -> None:
+    if tensor.dtype not in _ID_DTYPES:
+        raise TypeError(f"{name} must contain int32 or int64 ids, got dtype={tensor.dtype}.")
+    if tensor.numel() == 0:
+        return
+    if bool((tensor < 0).any()) or bool((tensor >= upper_bound).any()):
+        min_id = int(tensor.min().item())
+        max_id = int(tensor.max().item())
+        raise ValueError(f"{name} ids must be in [0, {upper_bound - 1}], got min={min_id}, max={max_id}.")
+
+
+def _validate_mask_tensor(name: str, tensor: torch.Tensor) -> None:
+    if tensor.dtype not in _MASK_DTYPES:
+        raise TypeError(f"{name} must be a bool or integer mask, got dtype={tensor.dtype}.")
+
+
+def _validate_length_tensor(name: str, tensor: torch.Tensor) -> None:
+    if tensor.dtype not in _ID_DTYPES:
+        raise TypeError(f"{name} must contain int32 or int64 lengths, got dtype={tensor.dtype}.")
 
 
 @dataclass
@@ -63,8 +93,32 @@ class CSMTConfig:
             "boundary_width": self.boundary_width,
         }
         for name, value in positive_ints.items():
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise TypeError(f"{name} must be an integer, got {type(value).__name__}")
             if value <= 0:
                 raise ValueError(f"{name} must be positive, got {value}")
+        float_values = {
+            "ffn_multiplier": self.ffn_multiplier,
+            "kv_compression": self.kv_compression,
+            "ast_gate_scale": self.ast_gate_scale,
+            "boundary_mix": self.boundary_mix,
+            "cvd_prob": self.cvd_prob,
+            "dropout": self.dropout,
+        }
+        for name, value in float_values.items():
+            if not _is_real_number(value):
+                raise TypeError(f"{name} must be a finite real number, got {value!r}")
+        bool_flags = {
+            "tie_embeddings": self.tie_embeddings,
+            "use_ast_gate": self.use_ast_gate,
+            "use_block_graph": self.use_block_graph,
+            "use_cvd": self.use_cvd,
+            "use_moe": self.use_moe,
+            "use_boundary": self.use_boundary,
+        }
+        for name, value in bool_flags.items():
+            if not isinstance(value, bool):
+                raise TypeError(f"{name} must be a bool, got {type(value).__name__}")
         if self.hidden_size % self.num_heads != 0:
             raise ValueError("hidden_size must be divisible by num_heads")
         if self.hidden_size % self.num_graph_heads != 0:
@@ -77,8 +131,14 @@ class CSMTConfig:
             raise ValueError("dropout must be in [0, 1)")
         if self.ffn_multiplier <= 0:
             raise ValueError("ffn_multiplier must be positive")
-        if self.kv_compression <= 0:
-            raise ValueError("kv_compression must be positive")
+        if int(self.hidden_size * self.ffn_multiplier) <= 0:
+            raise ValueError("hidden_size * ffn_multiplier must produce at least one FFN channel")
+        if not 0.0 < self.kv_compression <= 1.0:
+            raise ValueError("kv_compression must be in (0, 1]")
+        if not 0.0 <= self.ast_gate_scale < 1.0:
+            raise ValueError("ast_gate_scale must be in [0, 1)")
+        if self.use_ast_gate and self.num_ast_types < 2:
+            raise ValueError("num_ast_types must include at least <PAD> and <UNKNOWN> when use_ast_gate=True")
         if not 0.0 <= self.boundary_mix <= 1.0:
             raise ValueError("boundary_mix must be in [0, 1]")
         if self.boundary_width > self.block_size:
@@ -172,7 +232,8 @@ class ASTGatedPool(nn.Module):
         token_mask: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         if self.use_ast_gate and ast_embeds is not None:
-            assert self.ast_to_hidden is not None
+            if self.ast_to_hidden is None:
+                raise RuntimeError("AST gate is enabled, but ast_to_hidden was not initialized.")
             gate = torch.tanh(self.ast_to_hidden(ast_embeds.to(dtype=h_local.dtype)))
             gate = 1.0 + self.ast_gate_scale * gate
             h_local = h_local * gate
@@ -206,7 +267,8 @@ class BoundaryAwarePoolInput(nn.Module):
             return h_local
 
         mixed = h_local.clone()
-        assert self.left_proj is not None
+        if self.left_proj is None:
+            raise RuntimeError("Boundary mixing is enabled, but left_proj was not initialized.")
         width = min(self.width, h_local.size(2))
         prev_tail = self.left_proj(h_local[:, :-1, -1])
         prev_tail = prev_tail.view(h_local.size(0), h_local.size(1) - 1, self.width, h_local.size(-1))[:, :, :width]
@@ -250,7 +312,8 @@ class PrefixBlockGraph(nn.Module):
         if not self.config.use_cvd or not self.training or self.config.cvd_prob <= 0:
             self.last_cvd_audit = {"eligible_blocks": 0.0, "sampled_blocks": 0.0, "valid_blocks": 0.0}
             return None
-        assert self.cvd_replacement is not None
+        if self.cvd_replacement is None:
+            raise RuntimeError("CVD is enabled, but cvd_replacement was not initialized.")
         valid_count = float(valid_block_mask.to(dtype=torch.bool).sum().item()) if valid_block_mask is not None else 0.0
         if self.config.cvd_scope == "variable":
             if var_def_mask is None:
@@ -262,6 +325,11 @@ class PrefixBlockGraph(nn.Module):
                 self.last_cvd_audit = {"eligible_blocks": 0.0, "sampled_blocks": 0.0, "valid_blocks": 0.0}
                 return None
             eligible = valid_block_mask.to(dtype=torch.bool, device=self.cvd_replacement.device)
+        if valid_block_mask is not None:
+            valid = valid_block_mask.to(dtype=torch.bool, device=eligible.device)
+            if valid.shape != eligible.shape:
+                raise ValueError(f"valid_block_mask shape {tuple(valid.shape)} must match eligible mask shape {tuple(eligible.shape)}.")
+            eligible = eligible & valid
         if not bool(eligible.any()):
             self.last_cvd_audit = {"eligible_blocks": 0.0, "sampled_blocks": 0.0, "valid_blocks": valid_count}
             return None
@@ -289,7 +357,8 @@ class PrefixBlockGraph(nn.Module):
         k = self.k_proj(z).view(n, m, self.num_heads, self.head_dim).transpose(1, 2)
         v = self.v_proj(z).view(n, m, self.num_heads, self.head_dim)
         if cvd_mask is not None:
-            assert self.cvd_replacement is not None
+            if self.cvd_replacement is None:
+                raise RuntimeError("CVD mask was sampled, but cvd_replacement is unavailable.")
             replacement = self.cvd_replacement.view(1, self.num_heads, self.head_dim).to(dtype=v.dtype)
             v = torch.where(cvd_mask.view(n, m, 1, 1), replacement, v)
         v = v.transpose(1, 2)
@@ -415,8 +484,8 @@ class CSMTLayer(nn.Module):
         h_local = self.boundary(h_local, token_mask)
         h_local, z = self.pool(h_local, ast_embeds, token_mask)
         if self.config.use_block_graph:
-            assert self.graph is not None
-            assert self.inject is not None
+            if self.graph is None or self.inject is None:
+                raise RuntimeError("Block graph is enabled, but graph modules were not initialized.")
             block_state, cvd_mask = self.graph(z, var_def_mask, token_mask.any(dim=-1))
             injected = self.inject(h_local, block_state)
         else:
@@ -426,10 +495,12 @@ class CSMTLayer(nn.Module):
 
         ffn_input = self.norm_moe(injected)
         if self.use_moe:
-            assert self.moe is not None
+            if self.moe is None:
+                raise RuntimeError("MoE is enabled, but the MoE module was not initialized.")
             ffn_out = self.moe(ffn_input)
         else:
-            assert self.dense_ffn is not None
+            if self.dense_ffn is None:
+                raise RuntimeError("MoE is disabled, but dense_ffn was not initialized.")
             ffn_out = self.dense_ffn(ffn_input)
         out = injected + ffn_out
         return out, block_state, cvd_mask
@@ -464,14 +535,22 @@ class CSMTModel(nn.Module):
             raise ValueError("CSMTModel expects input_ids shaped [L] or [batch, L].")
 
         input_ids = input_ids[:, : self.config.max_tokens]
+        _validate_id_tensor("input_ids", input_ids, self.config.vocab_size)
+        input_ids = input_ids.long()
         batch_size, length = input_ids.shape
+        if length == 0:
+            raise ValueError("input_ids must contain at least one token after max_tokens truncation.")
         if lengths is None:
             lengths = torch.full((batch_size,), length, dtype=torch.long, device=input_ids.device)
         else:
-            lengths = lengths.to(device=input_ids.device, dtype=torch.long).view(-1)
+            _validate_length_tensor("lengths", lengths)
+            lengths = lengths.to(device=input_ids.device).view(-1).long()
             if lengths.numel() != batch_size:
                 raise ValueError(f"lengths must have batch dimension {batch_size}, got {lengths.numel()}.")
-            lengths = lengths.clamp(min=0, max=length)
+            if bool((lengths < 0).any()) or bool((lengths > length).any()):
+                min_len = int(lengths.min().item())
+                max_len = int(lengths.max().item())
+                raise ValueError(f"lengths must be in [0, {length}] after max_tokens truncation, got min={min_len}, max={max_len}.")
         padded_ids = _pad_batch_to_block(input_ids, self.config.block_size)
         padded_length = padded_ids.size(1)
         num_blocks = padded_length // self.config.block_size
@@ -482,9 +561,12 @@ class CSMTModel(nn.Module):
 
         ast_embeds = None
         if ast_type_ids is not None and self.config.use_ast_gate:
-            assert self.ast_embed is not None
+            if self.ast_embed is None:
+                raise RuntimeError("AST gate is enabled, but ast_embed was not initialized.")
             if ast_type_ids.dim() == 2:
                 ast_type_ids = ast_type_ids.unsqueeze(0)
+                if batch_size > 1:
+                    ast_type_ids = ast_type_ids.expand(batch_size, -1, -1)
             if ast_type_ids.dim() != 3:
                 raise ValueError("ast_type_ids must have shape [num_blocks, block_size] or [batch, num_blocks, block_size].")
             if ast_type_ids.size(0) != batch_size:
@@ -494,7 +576,9 @@ class CSMTModel(nn.Module):
                     f"ast_type_ids last dimension must equal block_size={self.config.block_size}, "
                     f"got {ast_type_ids.size(2)}."
                 )
-            ast_type_ids = ast_type_ids[:, :num_blocks].to(device=input_ids.device, dtype=torch.long)
+            ast_type_ids = ast_type_ids[:, :num_blocks].to(device=input_ids.device)
+            _validate_id_tensor("ast_type_ids", ast_type_ids, self.config.num_ast_types)
+            ast_type_ids = ast_type_ids.long()
             if ast_type_ids.size(1) < num_blocks:
                 pad_blocks = num_blocks - ast_type_ids.size(1)
                 pad = torch.zeros(
@@ -505,20 +589,26 @@ class CSMTModel(nn.Module):
                     dtype=torch.long,
                 )
                 ast_type_ids = torch.cat([ast_type_ids, pad], dim=1)
-            ast_embeds = self.ast_embed(ast_type_ids.clamp_max(self.config.num_ast_types - 1))
+            ast_embeds = self.ast_embed(ast_type_ids)
 
         if var_def_mask is not None and self.config.use_block_graph and self.config.use_cvd:
+            _validate_mask_tensor("var_def_mask", var_def_mask)
             if var_def_mask.dim() == 1:
                 var_def_mask = var_def_mask.unsqueeze(0)
+                if batch_size > 1:
+                    var_def_mask = var_def_mask.expand(batch_size, -1)
             if var_def_mask.dim() != 2:
                 raise ValueError("var_def_mask must have shape [num_blocks], [batch, num_blocks], or [batch, tokens].")
             if var_def_mask.size(0) != batch_size:
                 raise ValueError(f"var_def_mask batch dimension must be {batch_size}, got {var_def_mask.size(0)}.")
 
             mask_width = var_def_mask.size(1)
-            looks_token_level = mask_width > num_blocks or mask_width == length
+            looks_token_level = mask_width > self.config.num_blocks or mask_width == length
             if looks_token_level:
                 token_level = var_def_mask[:, :length].to(device=input_ids.device, dtype=torch.bool)
+                if token_level.size(1) < length:
+                    pad = torch.zeros(batch_size, length - token_level.size(1), device=input_ids.device, dtype=torch.bool)
+                    token_level = torch.cat([token_level, pad], dim=1)
                 token_level = _pad_batch_to_block(token_level, self.config.block_size)
                 var_def_mask = token_level.view(batch_size, num_blocks, self.config.block_size).any(dim=-1)
             else:
