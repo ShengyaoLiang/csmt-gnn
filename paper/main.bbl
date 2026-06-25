@@ -1,0 +1,107 @@
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Allamanis et~al.(2018)Allamanis, Brockschmidt, and
+  Khademi]{allamanis2018learning}
+Miltiadis Allamanis, Marc Brockschmidt, and Mahmoud Khademi.
+\newblock Learning to represent programs with graphs.
+\newblock In \emph{International Conference on Learning Representations}, 2018.
+
+\bibitem[Alon et~al.(2019)Alon, Zilberstein, Levy, and Yahav]{alon2019code2vec}
+Uri Alon, Meital Zilberstein, Omer Levy, and Eran Yahav.
+\newblock code2vec: Learning distributed representations of code.
+\newblock In \emph{Proceedings of the ACM on Programming Languages}, 2019.
+
+\bibitem[Brockschmidt et~al.(2019)Brockschmidt, Allamanis, Gaunt, and
+  Polozov]{brockschmidt2019generative}
+Marc Brockschmidt, Miltiadis Allamanis, Alexander~L. Gaunt, and Oleksandr
+  Polozov.
+\newblock Generative code modeling with graphs.
+\newblock In \emph{International Conference on Learning Representations}, 2019.
+
+\bibitem[Chen et~al.(2021)Chen, Tworek, Jun, Yuan, Pinto, Kaplan, Edwards,
+  Burda, Joseph, Brockman, Ray, Puri, Krueger, Petrov, Khlaaf, Sastry, Mishkin,
+  Chan, Gray, Ryder, Pavlov, Power, Kaiser, Bavarian, Winter, Tillet, Such,
+  Cummings, Plappert, Chantzis, Barnes, Herbert-Voss, Guss, Nichol, Paino,
+  Tezak, Tang, Babuschkin, Balaji, Jain, Saunders, Hesse, Carr, Leike, Achiam,
+  Misra, Morikawa, Radford, Knight, Brundage, Murati, Mayer, Welinder, McGrew,
+  Amodei, McCandlish, Sutskever, and Zaremba]{chen2021evaluating}
+Mark Chen, Jerry Tworek, Heewoo Jun, Qiming Yuan, Henrique Ponde de~Oliveira
+  Pinto, Jared Kaplan, Harri Edwards, Yuri Burda, Nicholas Joseph, Greg
+  Brockman, Alex Ray, Raul Puri, Gretchen Krueger, Michael Petrov, Heidy
+  Khlaaf, Girish Sastry, Pamela Mishkin, Brooke Chan, Scott Gray, Nick Ryder,
+  Mikhail Pavlov, Alethea Power, Lukasz Kaiser, Mohammad Bavarian, Clemens
+  Winter, Philippe Tillet, Felipe~Petroski Such, Dave Cummings, Matthias
+  Plappert, Fotios Chantzis, Elizabeth Barnes, Ariel Herbert-Voss,
+  William~Hebgen Guss, Alex Nichol, Alex Paino, Nikolas Tezak, Jie Tang, Igor
+  Babuschkin, Suchir Balaji, Shantanu Jain, William Saunders, Christopher
+  Hesse, Andrew~N. Carr, Jan Leike, Josh Achiam, Vedant Misra, Evan Morikawa,
+  Alec Radford, Matthew Knight, Miles Brundage, Mira Murati, Katie Mayer, Peter
+  Welinder, Bob McGrew, Dario Amodei, Sam McCandlish, Ilya Sutskever, and
+  Wojciech Zaremba.
+\newblock Evaluating large language models trained on code.
+\newblock In \emph{arXiv preprint arXiv:2107.03374}, 2021.
+
+\bibitem[Dao et~al.(2022)Dao, Fu, Ermon, Rudra, and
+  R{\'e}]{dao2022flashattention}
+Tri Dao, Daniel~Y. Fu, Stefano Ermon, Atri Rudra, and Christopher R{\'e}.
+\newblock Flashattention: Fast and memory-efficient exact attention with
+  io-awareness.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2022.
+
+\bibitem[Fedus et~al.(2022)Fedus, Zoph, and Shazeer]{fedus2022switch}
+William Fedus, Barret Zoph, and Noam Shazeer.
+\newblock Switch transformers: Scaling to trillion parameter models with simple
+  and efficient sparsity.
+\newblock \emph{Journal of Machine Learning Research}, 23\penalty0
+  (120):\penalty0 1--39, 2022.
+
+\bibitem[Lepikhin et~al.(2021)Lepikhin, Lee, Xu, Chen, Firat, Huang, Krikun,
+  Shazeer, and Chen]{lepikhin2020gshard}
+Dmitry Lepikhin, HyoukJoong Lee, Yuanzhong Xu, Dehao Chen, Orhan Firat, Yanping
+  Huang, Maxim Krikun, Noam Shazeer, and Zhifeng Chen.
+\newblock Gshard: Scaling giant models with conditional computation and
+  automatic sharding.
+\newblock In \emph{International Conference on Learning Representations}, 2021.
+
+\bibitem[Nijkamp et~al.(2023)Nijkamp, Pang, Hayashi, Tu, Wang, Zhou, Savarese,
+  and Xiong]{nijkamp2023codegen}
+Erik Nijkamp, Bo~Pang, Hiroaki Hayashi, Lifu Tu, Huan Wang, Yingbo Zhou, Silvio
+  Savarese, and Caiming Xiong.
+\newblock Codegen: An open large language model for code with multi-turn
+  program synthesis.
+\newblock \emph{International Conference on Learning Representations}, 2023.
+
+\bibitem[Roziere et~al.(2023)Roziere, Gehring, Gloeckle, Sootla, Gat, Tan, Adi,
+  Liu, Remez, Rapin, Kozhevnikov, Evtimov, Bitton, Bhatt, Ferrer, Grattafiori,
+  Xiong, Defossez, Copet, Azhar, Touvron, Martin, Usunier, Scialom, and
+  Synnaeve]{roziere2023code}
+Baptiste Roziere, Jonas Gehring, Fabian Gloeckle, Sten Sootla, Itai Gat,
+  Xiaoqing~Ellen Tan, Yossi Adi, Jingyu Liu, Tal Remez, J{\'e}r{\'e}my Rapin,
+  Artyom Kozhevnikov, Ivan Evtimov, Joanna Bitton, Manish Bhatt,
+  Cristian~Canton Ferrer, Aaron Grattafiori, Wenhan Xiong, Alexandre Defossez,
+  Jade Copet, Faisal Azhar, Hugo Touvron, Louis Martin, Nicolas Usunier, Thomas
+  Scialom, and Gabriel Synnaeve.
+\newblock Code llama: Open foundation models for code.
+\newblock \emph{arXiv preprint arXiv:2308.12950}, 2023.
+
+\bibitem[Shazeer et~al.(2017)Shazeer, Mirhoseini, Maziarz, Davis, Le, Hinton,
+  and Dean]{shazeer2017outrageously}
+Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le,
+  Geoffrey Hinton, and Jeff Dean.
+\newblock Outrageously large neural networks: The sparsely-gated
+  mixture-of-experts layer.
+\newblock In \emph{International Conference on Learning Representations}, 2017.
+
+\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez,
+  Kaiser, and Polosukhin]{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N. Gomez, Lukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2017.
+
+\end{thebibliography}

@@ -1,0 +1,17 @@
+{
+  "purpose": "prefix/full AST degradation measurement; not a model benchmark",
+  "num_tokens": 13,
+  "block_size": 8,
+  "max_tokens": 64,
+  "vocab_frozen": false,
+  "tree_sitter_available": true,
+  "fallback_tokens": 5,
+  "fallback_rate": 0.38461538461538464,
+  "unknown_tokens": 0,
+  "unknown_rate": 0.0,
+  "prefix_full_divergence": 0.46153846153846156,
+  "full_ast_tokens": 13,
+  "prefix_ast_tokens": 13,
+  "repeat": 3,
+  "avg_ms": 4.295600000962925
+}

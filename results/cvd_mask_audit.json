@@ -1,0 +1,368 @@
+{
+  "purpose": "CVD sampling audit; not a benchmark",
+  "seed": 7,
+  "cvd_prob": 0.2,
+  "steps": 24,
+  "scopes": [
+    {
+      "scope": "variable",
+      "totals": {
+        "eligible_blocks": 72.0,
+        "sampled_blocks": 16.0,
+        "valid_blocks": 112.0,
+        "layers_with_cvd": 24.0,
+        "sample_rate": 0.2222222222222222
+      },
+      "per_step": [
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.3333333333333333
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.3333333333333333
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 2.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.6666666666666666
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.3333333333333333
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.3333333333333333
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.3333333333333333
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 2.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.6666666666666666
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.3333333333333333
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.3333333333333333
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 2.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.6666666666666666
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.3333333333333333
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 3.0,
+          "sampled_blocks": 2.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.6666666666666666
+        }
+      ]
+    },
+    {
+      "scope": "random",
+      "totals": {
+        "eligible_blocks": 112.0,
+        "sampled_blocks": 25.0,
+        "valid_blocks": 112.0,
+        "layers_with_cvd": 24.0,
+        "sample_rate": 0.22321428571428573
+      },
+      "per_step": [
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.2
+        },
+        {
+          "eligible_blocks": 4.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.25
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 2.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.4
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 3.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.6
+        },
+        {
+          "eligible_blocks": 4.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.2
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 4.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 2.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.4
+        },
+        {
+          "eligible_blocks": 4.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 3.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.6
+        },
+        {
+          "eligible_blocks": 4.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 2.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.4
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 4.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.2
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.2
+        },
+        {
+          "eligible_blocks": 4.0,
+          "sampled_blocks": 3.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.75
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 1.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.2
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 2.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.4
+        },
+        {
+          "eligible_blocks": 4.0,
+          "sampled_blocks": 0.0,
+          "valid_blocks": 4.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.0
+        },
+        {
+          "eligible_blocks": 5.0,
+          "sampled_blocks": 2.0,
+          "valid_blocks": 5.0,
+          "layers_with_cvd": 1.0,
+          "sample_rate": 0.4
+        }
+      ]
+    }
+  ]
+}

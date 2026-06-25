@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: "CSMT-GNN: Structure-Aware Contextual Variable Dropout for Code Language Models"
+message: "If you use this code or paper draft, please cite the released version."
+type: software
+authors:
+  - family-names: "Liang"
+    given-names: "Shengyao"
+    email: "pikeshuaiwe@gmail.com"
+    orcid: "https://orcid.org/0009-0002-3713-8700"
+abstract: "A structure-aware code language model prototype with tokenizer-aligned AST ids, prefix block graph attention, and Contextual Variable Dropout."
+keywords:
+  - code language models
+  - abstract syntax trees
+  - mixture of experts
+  - structural hallucination
+  - multi-LLM assisted development
+license: MIT
+version: 0.1.0
+date-released: 2026-06-25

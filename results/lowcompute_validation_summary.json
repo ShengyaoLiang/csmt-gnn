@@ -1,0 +1,844 @@
+{
+  "purpose": "local mechanism-check record; not a benchmark or architecture-quality claim",
+  "machine_class": "Intel i5-10210U, 8GB RAM, MX330 2GB not used; PyTorch CPU run",
+  "environment": {
+    "python": "C:/Model/mix/.venv-lowcompute/Scripts/python.exe",
+    "torch": "2.12.1+cpu",
+    "numpy": "2.2.6",
+    "tree_sitter_available": true,
+    "docker_hello_world": "passed"
+  },
+  "stage0": {
+    "py_compile": "passed",
+    "unit_tests": "23/23 passed with PyTorch CPU",
+    "definition_mask_tests": "passed; assignment, parameters, imports, attributes, destructuring, for-targets, and use-only negatives covered",
+    "structural_probe_eval": {
+      "purpose": "structural diagnostic coverage; not model accuracy",
+      "block_size": 8,
+      "cases": [
+        {
+          "name": "shadowing",
+          "num_tokens": 34,
+          "num_blocks": 5,
+          "definition_tokens": 6,
+          "definition_blocks": 3,
+          "definition_use_pairs": 3,
+          "cross_block_pairs": 2,
+          "max_token_distance": 20,
+          "max_block_distance": 3
+        },
+        {
+          "name": "long_range_import",
+          "num_tokens": 30,
+          "num_blocks": 4,
+          "definition_tokens": 6,
+          "definition_blocks": 3,
+          "definition_use_pairs": 3,
+          "cross_block_pairs": 3,
+          "max_token_distance": 24,
+          "max_block_distance": 3
+        },
+        {
+          "name": "guarded_attribute",
+          "num_tokens": 34,
+          "num_blocks": 5,
+          "definition_tokens": 7,
+          "definition_blocks": 3,
+          "definition_use_pairs": 5,
+          "cross_block_pairs": 3,
+          "max_token_distance": 18,
+          "max_block_distance": 2
+        }
+      ]
+    },
+    "prefix_ast": {
+      "fallback_rate": 0.38461538461538464,
+      "unknown_rate": 0.0,
+      "prefix_full_divergence": 0.46153846153846156,
+      "avg_ms": 4.295600000962925,
+      "num_tokens": 13
+    },
+    "cvd_mask_audit": {
+      "variable": {
+        "eligible_blocks": 72.0,
+        "sampled_blocks": 16.0,
+        "valid_blocks": 112.0,
+        "layers_with_cvd": 24.0,
+        "sample_rate": 0.2222222222222222
+      },
+      "random": {
+        "eligible_blocks": 112.0,
+        "sampled_blocks": 25.0,
+        "valid_blocks": 112.0,
+        "layers_with_cvd": 24.0,
+        "sample_rate": 0.22321428571428573
+      }
+    },
+    "architecture_cost_table": {
+      "purpose": "structural edge-count and block-size trade-off audit; not a runtime benchmark",
+      "selected_rows": [
+        {
+          "sequence_length": 1024,
+          "block_size": 64,
+          "num_blocks": 16,
+          "dense_causal_edges": 524800,
+          "block_local_edges": 33280,
+          "block_graph_edges": 136,
+          "csmt_edges": 33416,
+          "edge_ratio_vs_dense": 0.06367378048780488,
+          "asymptotic_proxy": 65792.0,
+          "continuous_optimal_block": 12.699208415745595
+        },
+        {
+          "sequence_length": 2048,
+          "block_size": 64,
+          "num_blocks": 32,
+          "dense_causal_edges": 2098176,
+          "block_local_edges": 66560,
+          "block_graph_edges": 528,
+          "csmt_edges": 67088,
+          "edge_ratio_vs_dense": 0.031974438750610054,
+          "asymptotic_proxy": 132096.0,
+          "continuous_optimal_block": 15.999999999999998
+        },
+        {
+          "sequence_length": 4096,
+          "block_size": 64,
+          "num_blocks": 64,
+          "dense_causal_edges": 8390656,
+          "block_local_edges": 133120,
+          "block_graph_edges": 2080,
+          "csmt_edges": 135200,
+          "edge_ratio_vs_dense": 0.016113162069807174,
+          "asymptotic_proxy": 266240.0,
+          "continuous_optimal_block": 20.158736798317967
+        }
+      ],
+      "interpretation": "Edge-count audit supports the intended communication trade-off, but it is not a runtime benchmark and does not choose a universal block size."
+    }
+  },
+  "stage1": {
+    "diagnostic_poc_train": "passed; 10 variants, 12 steps each, hidden_size=16, max_tokens=64, CPU; now includes transformer_baseline and transformer_matched",
+    "variants": [
+      {
+        "variant": "transformer_baseline",
+        "final_loss": 3.6033527851104736,
+        "loss_delta": -0.2730367183685303,
+        "eval_loss": 3.6341682275136313,
+        "definition_use_loss": 3.662970781326294,
+        "cross_block_use_loss": 3.680933157602946,
+        "params": 4688
+      },
+      {
+        "variant": "transformer_matched",
+        "final_loss": 3.675102949142456,
+        "loss_delta": -0.38445544242858887,
+        "eval_loss": 3.5889317989349365,
+        "definition_use_loss": 3.9100902875264487,
+        "cross_block_use_loss": 3.746891657511393,
+        "params": 6992
+      },
+      {
+        "variant": "token_baseline",
+        "final_loss": 3.7727115154266357,
+        "loss_delta": -0.3678271770477295,
+        "eval_loss": 3.7131099700927734,
+        "definition_use_loss": 3.7730023860931396,
+        "cross_block_use_loss": 3.9151583512624106,
+        "params": 4576
+      },
+      {
+        "variant": "boundary_only",
+        "final_loss": 3.7944087982177734,
+        "loss_delta": -0.2147836685180664,
+        "eval_loss": 3.682332436243693,
+        "definition_use_loss": 3.844447294871012,
+        "cross_block_use_loss": 3.9948604106903076,
+        "params": 4832
+      },
+      {
+        "variant": "ast_only",
+        "final_loss": 3.719421863555908,
+        "loss_delta": -0.3769960403442383,
+        "eval_loss": 3.6714816888173423,
+        "definition_use_loss": 3.728619654973348,
+        "cross_block_use_loss": 3.803393761316935,
+        "params": 4896
+      },
+      {
+        "variant": "graph_only",
+        "final_loss": 3.736685037612915,
+        "loss_delta": -0.29750609397888184,
+        "eval_loss": 3.6629838148752847,
+        "definition_use_loss": 3.446245272954305,
+        "cross_block_use_loss": 3.6175638834635415,
+        "params": 6384
+      },
+      {
+        "variant": "ast_graph",
+        "final_loss": 3.944422483444214,
+        "loss_delta": 0.14875173568725586,
+        "eval_loss": 3.6480132738749185,
+        "definition_use_loss": 3.464450200398763,
+        "cross_block_use_loss": 3.501889228820801,
+        "params": 6960
+      },
+      {
+        "variant": "random_dropout_control",
+        "final_loss": 3.6432158946990967,
+        "loss_delta": -0.13801932334899902,
+        "eval_loss": 3.547013759613037,
+        "definition_use_loss": 3.756911595662435,
+        "cross_block_use_loss": 3.85650634765625,
+        "params": 6976
+      },
+      {
+        "variant": "variable_cvd",
+        "final_loss": 3.643141508102417,
+        "loss_delta": -0.13811016082763672,
+        "eval_loss": 3.5470028718312583,
+        "definition_use_loss": 3.7567496299743652,
+        "cross_block_use_loss": 3.856293280919393,
+        "params": 6976
+      },
+      {
+        "variant": "full_moe",
+        "final_loss": 3.6942386627197266,
+        "loss_delta": -0.3561239242553711,
+        "eval_loss": 3.6086603800455728,
+        "definition_use_loss": 3.4300577640533447,
+        "cross_block_use_loss": 3.270657698313395,
+        "params": 8160
+      }
+    ],
+    "block_sweep": {
+      "4": [
+        {
+          "variant": "token_baseline",
+          "final_loss": 3.758897066116333,
+          "loss_delta": -0.3828318119049072,
+          "params": 4576
+        },
+        {
+          "variant": "ast_graph",
+          "final_loss": 3.944380283355713,
+          "loss_delta": 0.14573955535888672,
+          "params": 6960
+        },
+        {
+          "variant": "variable_cvd",
+          "final_loss": 3.63619327545166,
+          "loss_delta": -0.14759445190429688,
+          "params": 6976
+        }
+      ],
+      "8": [
+        {
+          "variant": "token_baseline",
+          "final_loss": 3.7727115154266357,
+          "loss_delta": -0.3678271770477295,
+          "params": 4576
+        },
+        {
+          "variant": "ast_graph",
+          "final_loss": 3.944422483444214,
+          "loss_delta": 0.14875173568725586,
+          "params": 6960
+        },
+        {
+          "variant": "variable_cvd",
+          "final_loss": 3.643141508102417,
+          "loss_delta": -0.13811016082763672,
+          "params": 6976
+        }
+      ],
+      "16": [
+        {
+          "variant": "token_baseline",
+          "final_loss": 3.7790565490722656,
+          "loss_delta": -0.352297306060791,
+          "params": 4576
+        },
+        {
+          "variant": "ast_graph",
+          "final_loss": 3.954763174057007,
+          "loss_delta": 0.15981245040893555,
+          "params": 6960
+        },
+        {
+          "variant": "variable_cvd",
+          "final_loss": 3.640545606613159,
+          "loss_delta": -0.13991951942443848,
+          "params": 6976
+        }
+      ]
+    },
+    "seed_sweep": {
+      "1": [
+        {
+          "variant": "token_baseline",
+          "final_loss": 3.804208993911743,
+          "loss_delta": -0.24442791938781738,
+          "params": 4576
+        },
+        {
+          "variant": "ast_graph",
+          "final_loss": 3.6647160053253174,
+          "loss_delta": -0.3858950138092041,
+          "params": 6960
+        },
+        {
+          "variant": "variable_cvd",
+          "final_loss": 3.6765198707580566,
+          "loss_delta": -0.32787656784057617,
+          "params": 6976
+        }
+      ],
+      "2": [
+        {
+          "variant": "token_baseline",
+          "final_loss": 3.521451950073242,
+          "loss_delta": -0.338390588760376,
+          "params": 4576
+        },
+        {
+          "variant": "ast_graph",
+          "final_loss": 3.800548553466797,
+          "loss_delta": -0.3728199005126953,
+          "params": 6960
+        },
+        {
+          "variant": "variable_cvd",
+          "final_loss": 3.8007519245147705,
+          "loss_delta": -0.15362024307250977,
+          "params": 6976
+        }
+      ],
+      "3": [
+        {
+          "variant": "token_baseline",
+          "final_loss": 3.6884286403656006,
+          "loss_delta": -0.33828282356262207,
+          "params": 4576
+        },
+        {
+          "variant": "ast_graph",
+          "final_loss": 3.5677716732025146,
+          "loss_delta": -0.4637477397918701,
+          "params": 6960
+        },
+        {
+          "variant": "variable_cvd",
+          "final_loss": 3.7565577030181885,
+          "loss_delta": -0.15787243843078613,
+          "params": 6976
+        }
+      ]
+    },
+    "random_vs_variable_cvd_final_loss_diff": -7.43865966796875e-05,
+    "interpretation": [
+      "This confirms forward/backward, AST gate, prefix block graph, boundary mixing, CVD scopes, dense FFN, and MoE fallback can train on the local machine.",
+      "Block sizes 4, 8, and 16 all completed the tiny diagnostic run.",
+      "Seeds 1, 2, and 3 all completed the tiny diagnostic run for transformer_baseline, transformer_matched, ast_graph, variable_cvd, and full_moe.",
+      "This does not show model superiority; the run is too small and stochastic.",
+      "Random CVD and variable CVD remain extremely close on the seed-7 12-step diagnostic, so CVD benefit is not established.",
+      "The pure Transformer baseline is now an explicit independent model, not a disabled CSMT configuration.",
+      "A rough parameter-neighbor Transformer control has 6992 parameters, close to ast_graph at 6960 and variable_cvd at 6976 in the tiny setting.",
+      "On the seed-7 block-8 run, CSMT graph variants improve cross-block use loss over token_baseline, but the pure and matched Transformers remain strong controls.",
+      "Across seeds 1-3, transformer_matched and ast_graph are very close on mean cross-block use loss; this is a comparison starting point, not evidence that CSMT-GNN beats Transformer.",
+      "Variable CVD remains unstable in the tiny diagnostic and should not be claimed as beneficial without a larger, dependency-specific test."
+    ],
+    "transformer_comparison": {
+      "diagnostic_poc_transformer": "passed; includes pure token-only Transformer baseline and a rough parameter-neighbor Transformer control; hidden_size=16, max_tokens=64, steps=12, CPU",
+      "main_seed_7_block_8": [
+        {
+          "variant": "transformer_baseline",
+          "final_loss": 3.6033527851104736,
+          "loss_delta": -0.2730367183685303,
+          "eval_loss": 3.6341682275136313,
+          "definition_use_loss": 3.662970781326294,
+          "cross_block_use_loss": 3.680933157602946,
+          "params": 4688
+        },
+        {
+          "variant": "transformer_matched",
+          "final_loss": 3.675102949142456,
+          "loss_delta": -0.38445544242858887,
+          "eval_loss": 3.5889317989349365,
+          "definition_use_loss": 3.9100902875264487,
+          "cross_block_use_loss": 3.746891657511393,
+          "params": 6992
+        },
+        {
+          "variant": "token_baseline",
+          "final_loss": 3.7727115154266357,
+          "loss_delta": -0.3678271770477295,
+          "eval_loss": 3.7131099700927734,
+          "definition_use_loss": 3.7730023860931396,
+          "cross_block_use_loss": 3.9151583512624106,
+          "params": 4576
+        },
+        {
+          "variant": "boundary_only",
+          "final_loss": 3.7944087982177734,
+          "loss_delta": -0.2147836685180664,
+          "eval_loss": 3.682332436243693,
+          "definition_use_loss": 3.844447294871012,
+          "cross_block_use_loss": 3.9948604106903076,
+          "params": 4832
+        },
+        {
+          "variant": "ast_only",
+          "final_loss": 3.719421863555908,
+          "loss_delta": -0.3769960403442383,
+          "eval_loss": 3.6714816888173423,
+          "definition_use_loss": 3.728619654973348,
+          "cross_block_use_loss": 3.803393761316935,
+          "params": 4896
+        },
+        {
+          "variant": "graph_only",
+          "final_loss": 3.736685037612915,
+          "loss_delta": -0.29750609397888184,
+          "eval_loss": 3.6629838148752847,
+          "definition_use_loss": 3.446245272954305,
+          "cross_block_use_loss": 3.6175638834635415,
+          "params": 6384
+        },
+        {
+          "variant": "ast_graph",
+          "final_loss": 3.944422483444214,
+          "loss_delta": 0.14875173568725586,
+          "eval_loss": 3.6480132738749185,
+          "definition_use_loss": 3.464450200398763,
+          "cross_block_use_loss": 3.501889228820801,
+          "params": 6960
+        },
+        {
+          "variant": "random_dropout_control",
+          "final_loss": 3.6432158946990967,
+          "loss_delta": -0.13801932334899902,
+          "eval_loss": 3.547013759613037,
+          "definition_use_loss": 3.756911595662435,
+          "cross_block_use_loss": 3.85650634765625,
+          "params": 6976
+        },
+        {
+          "variant": "variable_cvd",
+          "final_loss": 3.643141508102417,
+          "loss_delta": -0.13811016082763672,
+          "eval_loss": 3.5470028718312583,
+          "definition_use_loss": 3.7567496299743652,
+          "cross_block_use_loss": 3.856293280919393,
+          "params": 6976
+        },
+        {
+          "variant": "full_moe",
+          "final_loss": 3.6942386627197266,
+          "loss_delta": -0.3561239242553711,
+          "eval_loss": 3.6086603800455728,
+          "definition_use_loss": 3.4300577640533447,
+          "cross_block_use_loss": 3.270657698313395,
+          "params": 8160
+        }
+      ],
+      "block_sweep": {
+        "4": [
+          {
+            "variant": "transformer_baseline",
+            "final_loss": 3.6033527851104736,
+            "loss_delta": -0.2730367183685303,
+            "eval_loss": 3.6341682275136313,
+            "definition_use_loss": 3.662970781326294,
+            "cross_block_use_loss": 3.567913214365641,
+            "params": 4688
+          },
+          {
+            "variant": "transformer_matched",
+            "final_loss": 3.675102949142456,
+            "loss_delta": -0.38445544242858887,
+            "eval_loss": 3.5889317989349365,
+            "definition_use_loss": 3.9100902875264487,
+            "cross_block_use_loss": 3.846696615219116,
+            "params": 6992
+          },
+          {
+            "variant": "ast_graph",
+            "final_loss": 3.944380283355713,
+            "loss_delta": 0.14573955535888672,
+            "eval_loss": 3.644268751144409,
+            "definition_use_loss": 3.459420363108317,
+            "cross_block_use_loss": 3.439833164215088,
+            "params": 6960
+          },
+          {
+            "variant": "variable_cvd",
+            "final_loss": 3.63619327545166,
+            "loss_delta": -0.14759445190429688,
+            "eval_loss": 3.541929006576538,
+            "definition_use_loss": 3.731729427973429,
+            "cross_block_use_loss": 3.7725659211476645,
+            "params": 6976
+          },
+          {
+            "variant": "full_moe",
+            "final_loss": 3.686915874481201,
+            "loss_delta": -0.36672449111938477,
+            "eval_loss": 3.595109542210897,
+            "definition_use_loss": 3.412085851033529,
+            "cross_block_use_loss": 3.4101279576619468,
+            "params": 8160
+          }
+        ],
+        "8": [
+          {
+            "variant": "transformer_baseline",
+            "final_loss": 3.6033527851104736,
+            "loss_delta": -0.2730367183685303,
+            "eval_loss": 3.6341682275136313,
+            "definition_use_loss": 3.662970781326294,
+            "cross_block_use_loss": 3.680933157602946,
+            "params": 4688
+          },
+          {
+            "variant": "transformer_matched",
+            "final_loss": 3.675102949142456,
+            "loss_delta": -0.38445544242858887,
+            "eval_loss": 3.5889317989349365,
+            "definition_use_loss": 3.9100902875264487,
+            "cross_block_use_loss": 3.746891657511393,
+            "params": 6992
+          },
+          {
+            "variant": "ast_graph",
+            "final_loss": 3.944422483444214,
+            "loss_delta": 0.14875173568725586,
+            "eval_loss": 3.6480132738749185,
+            "definition_use_loss": 3.464450200398763,
+            "cross_block_use_loss": 3.501889228820801,
+            "params": 6960
+          },
+          {
+            "variant": "variable_cvd",
+            "final_loss": 3.643141508102417,
+            "loss_delta": -0.13811016082763672,
+            "eval_loss": 3.5470028718312583,
+            "definition_use_loss": 3.7567496299743652,
+            "cross_block_use_loss": 3.856293280919393,
+            "params": 6976
+          },
+          {
+            "variant": "full_moe",
+            "final_loss": 3.6942386627197266,
+            "loss_delta": -0.3561239242553711,
+            "eval_loss": 3.6086603800455728,
+            "definition_use_loss": 3.4300577640533447,
+            "cross_block_use_loss": 3.270657698313395,
+            "params": 8160
+          }
+        ],
+        "16": [
+          {
+            "variant": "transformer_baseline",
+            "final_loss": 3.6033527851104736,
+            "loss_delta": -0.2730367183685303,
+            "eval_loss": 3.6341682275136313,
+            "definition_use_loss": 3.662970781326294,
+            "cross_block_use_loss": 3.4862887859344482,
+            "params": 4688
+          },
+          {
+            "variant": "transformer_matched",
+            "final_loss": 3.675102949142456,
+            "loss_delta": -0.38445544242858887,
+            "eval_loss": 3.5889317989349365,
+            "definition_use_loss": 3.9100902875264487,
+            "cross_block_use_loss": 3.3826534748077393,
+            "params": 6992
+          },
+          {
+            "variant": "ast_graph",
+            "final_loss": 3.954763174057007,
+            "loss_delta": 0.15981245040893555,
+            "eval_loss": 3.6638611952463784,
+            "definition_use_loss": 3.4704630374908447,
+            "cross_block_use_loss": 3.788720448811849,
+            "params": 6960
+          },
+          {
+            "variant": "variable_cvd",
+            "final_loss": 3.640545606613159,
+            "loss_delta": -0.13991951942443848,
+            "eval_loss": 3.5540075302124023,
+            "definition_use_loss": 3.7805356979370117,
+            "cross_block_use_loss": 3.9170162677764893,
+            "params": 6976
+          },
+          {
+            "variant": "full_moe",
+            "final_loss": 3.6991004943847656,
+            "loss_delta": -0.35204076766967773,
+            "eval_loss": 3.614654541015625,
+            "definition_use_loss": 3.4468255837758384,
+            "cross_block_use_loss": 3.388219674428304,
+            "params": 8160
+          }
+        ]
+      },
+      "seed_sweep": {
+        "1": [
+          {
+            "variant": "transformer_baseline",
+            "final_loss": 3.7760448455810547,
+            "loss_delta": -0.21028566360473633,
+            "eval_loss": 3.6784772872924805,
+            "definition_use_loss": 3.878352721532186,
+            "cross_block_use_loss": 3.812586704889933,
+            "params": 4688
+          },
+          {
+            "variant": "transformer_matched",
+            "final_loss": 3.5817127227783203,
+            "loss_delta": -0.2790639400482178,
+            "eval_loss": 3.5410590171813965,
+            "definition_use_loss": 3.10001007715861,
+            "cross_block_use_loss": 3.1573813756306968,
+            "params": 6992
+          },
+          {
+            "variant": "ast_graph",
+            "final_loss": 3.6647160053253174,
+            "loss_delta": -0.3858950138092041,
+            "eval_loss": 3.6735571225484214,
+            "definition_use_loss": 3.5281147162119546,
+            "cross_block_use_loss": 3.6859469413757324,
+            "params": 6960
+          },
+          {
+            "variant": "variable_cvd",
+            "final_loss": 3.6765198707580566,
+            "loss_delta": -0.32787656784057617,
+            "eval_loss": 3.6672396659851074,
+            "definition_use_loss": 3.9006354808807373,
+            "cross_block_use_loss": 3.9422444502512612,
+            "params": 6976
+          },
+          {
+            "variant": "full_moe",
+            "final_loss": 3.670177698135376,
+            "loss_delta": -0.35245633125305176,
+            "eval_loss": 3.6694819927215576,
+            "definition_use_loss": 3.8138010501861572,
+            "cross_block_use_loss": 3.832693338394165,
+            "params": 8160
+          }
+        ],
+        "2": [
+          {
+            "variant": "transformer_baseline",
+            "final_loss": 3.7770302295684814,
+            "loss_delta": -0.18865036964416504,
+            "eval_loss": 3.65635355313619,
+            "definition_use_loss": 3.624323844909668,
+            "cross_block_use_loss": 3.6920247872670493,
+            "params": 4688
+          },
+          {
+            "variant": "transformer_matched",
+            "final_loss": 3.699256658554077,
+            "loss_delta": -0.4621732234954834,
+            "eval_loss": 3.760084788004557,
+            "definition_use_loss": 3.77179749806722,
+            "cross_block_use_loss": 3.9223201274871826,
+            "params": 6992
+          },
+          {
+            "variant": "ast_graph",
+            "final_loss": 3.800548553466797,
+            "loss_delta": -0.3728199005126953,
+            "eval_loss": 3.7498779296875,
+            "definition_use_loss": 3.6669864654541016,
+            "cross_block_use_loss": 3.7744346459706626,
+            "params": 6960
+          },
+          {
+            "variant": "variable_cvd",
+            "final_loss": 3.8007519245147705,
+            "loss_delta": -0.15362024307250977,
+            "eval_loss": 3.662445545196533,
+            "definition_use_loss": 3.5095632076263428,
+            "cross_block_use_loss": 3.4674277305603027,
+            "params": 6976
+          },
+          {
+            "variant": "full_moe",
+            "final_loss": 3.628782033920288,
+            "loss_delta": -0.21166181564331055,
+            "eval_loss": 3.5355175336201987,
+            "definition_use_loss": 3.7010655403137207,
+            "cross_block_use_loss": 3.7706056435902915,
+            "params": 8160
+          }
+        ],
+        "3": [
+          {
+            "variant": "transformer_baseline",
+            "final_loss": 3.7508955001831055,
+            "loss_delta": -0.06401300430297852,
+            "eval_loss": 3.6259814898173013,
+            "definition_use_loss": 3.6542988618214927,
+            "cross_block_use_loss": 3.517012278238932,
+            "params": 4688
+          },
+          {
+            "variant": "transformer_matched",
+            "final_loss": 3.7846519947052,
+            "loss_delta": -0.25403904914855957,
+            "eval_loss": 3.697141726811727,
+            "definition_use_loss": 3.6472535133361816,
+            "cross_block_use_loss": 3.49314022064209,
+            "params": 6992
+          },
+          {
+            "variant": "ast_graph",
+            "final_loss": 3.5677716732025146,
+            "loss_delta": -0.4637477397918701,
+            "eval_loss": 3.5563697814941406,
+            "definition_use_loss": 3.294783274332682,
+            "cross_block_use_loss": 3.1495394706726074,
+            "params": 6960
+          },
+          {
+            "variant": "variable_cvd",
+            "final_loss": 3.7565577030181885,
+            "loss_delta": -0.15787243843078613,
+            "eval_loss": 3.7232793172200522,
+            "definition_use_loss": 4.06099287668864,
+            "cross_block_use_loss": 4.1316202481587725,
+            "params": 6976
+          },
+          {
+            "variant": "full_moe",
+            "final_loss": 3.729203701019287,
+            "loss_delta": -0.20145821571350098,
+            "eval_loss": 3.6206063429514566,
+            "definition_use_loss": 3.648898124694824,
+            "cross_block_use_loss": 3.548720677693685,
+            "params": 8160
+          }
+        ]
+      },
+      "seed_1_3_summary": {
+        "transformer_baseline": {
+          "params": 4688,
+          "final_loss": {
+            "mean": 3.7679901917775473,
+            "pstdev": 0.012094464461961565
+          },
+          "eval_loss": {
+            "mean": 3.6536041100819907,
+            "pstdev": 0.0215193210235201
+          },
+          "definition_use_loss": {
+            "mean": 3.7189918094211154,
+            "pstdev": 0.11334769705459478
+          },
+          "cross_block_use_loss": {
+            "mean": 3.6738745901319714,
+            "pstdev": 0.12134834888191001
+          }
+        },
+        "transformer_matched": {
+          "params": 6992,
+          "final_loss": {
+            "mean": 3.688540458679199,
+            "pstdev": 0.08319541144146422
+          },
+          "eval_loss": {
+            "mean": 3.66609517733256,
+            "pstdev": 0.09207239270303083
+          },
+          "definition_use_loss": {
+            "mean": 3.5063536961873374,
+            "pstdev": 0.29179233891838663
+          },
+          "cross_block_use_loss": {
+            "mean": 3.5242805745866566,
+            "pstdev": 0.3130602867987616
+          }
+        },
+        "ast_graph": {
+          "params": 6960,
+          "final_loss": {
+            "mean": 3.6776787439982095,
+            "pstdev": 0.0954717879509239
+          },
+          "eval_loss": {
+            "mean": 3.6599349445766873,
+            "pstdev": 0.07958443588971394
+          },
+          "definition_use_loss": {
+            "mean": 3.4966281519995794,
+            "pstdev": 0.15357377524535668
+          },
+          "cross_block_use_loss": {
+            "mean": 3.536640352673001,
+            "pstdev": 0.2760951986788033
+          }
+        },
+        "variable_cvd": {
+          "params": 6976,
+          "final_loss": {
+            "mean": 3.744609832763672,
+            "pstdev": 0.05141636897504421
+          },
+          "eval_loss": {
+            "mean": 3.684321509467231,
+            "pstdev": 0.027616770113021258
+          },
+          "definition_use_loss": {
+            "mean": 3.8237305217319064,
+            "pstdev": 0.23159512018002604
+          },
+          "cross_block_use_loss": {
+            "mean": 3.8470974763234453,
+            "pstdev": 0.2793774449189528
+          }
+        },
+        "full_moe": {
+          "params": 8160,
+          "final_loss": {
+            "mean": 3.6760544776916504,
+            "pstdev": 0.04120703992604766
+          },
+          "eval_loss": {
+            "mean": 3.6085352897644043,
+            "pstdev": 0.0553528187741353
+          },
+          "definition_use_loss": {
+            "mean": 3.721254905064901,
+            "pstdev": 0.0688183674401545
+          },
+          "cross_block_use_loss": {
+            "mean": 3.7173398865593805,
+            "pstdev": 0.12189626371190797
+          }
+        }
+      },
+      "interpretation": [
+        "The pure Transformer baseline is now an explicit independent model, not a disabled CSMT configuration.",
+        "A rough parameter-neighbor Transformer control has 6992 parameters, close to ast_graph at 6960 and variable_cvd at 6976 in the tiny setting.",
+        "On the seed-7 block-8 run, CSMT graph variants improve cross-block use loss over token_baseline, but the pure and matched Transformers remain strong controls.",
+        "Across seeds 1-3, transformer_matched and ast_graph are very close on mean cross-block use loss; this is a comparison starting point, not evidence that CSMT-GNN beats Transformer.",
+        "Variable CVD remains unstable in the tiny diagnostic and should not be claimed as beneficial without a larger, dependency-specific test."
+      ]
+    }
+  },
+  "code_change_from_validation": "offline preprocessing now defaults to complete-file AST parsing; prefix parsing remains explicit for inference and leakage/degradation diagnostics; definition masks use Python binding spans when available",
+  "next_low_compute_steps": [
+    "Run a stricter parameter-matched Transformer-vs-CSMT study where depth, width, FFN size, training tokens, optimizer, and wall-clock budget are matched explicitly.",
+    "Add dependency-specific generation or classification metrics instead of reading only next-token loss.",
+    "Run 50-step and 100-step diagnostics only after the dependency-specific metric exists.",
+    "Stress-test prefix AST caching at block boundaries and report latency/quality tradeoffs."
+  ]
+}

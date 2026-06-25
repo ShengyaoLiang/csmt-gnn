@@ -1,0 +1,16 @@
+{
+  "title": "CSMT-GNN: Structure-Aware Contextual Variable Dropout for Code Language Models",
+  "authors": [
+    {
+      "name": "Shengyao Liang",
+      "email": "pikeshuaiwe@gmail.com",
+      "affiliation": "Independent Researcher",
+      "orcid": "https://orcid.org/0009-0002-3713-8700"
+    }
+  ],
+  "abstract_note": "Author metadata filled for arXiv/public preprint builds.",
+  "primary_category": "cs.LG",
+  "cross_list": ["cs.CL", "cs.SE"],
+  "license_recommendation": "arXiv.org perpetual, non-exclusive license 1.0 or CC BY 4.0, author decision required",
+  "status": "metadata complete"
+}

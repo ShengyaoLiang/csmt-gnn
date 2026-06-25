@@ -1,0 +1,155 @@
+{
+  "purpose": "structural diagnostic coverage; not model accuracy",
+  "block_size": 8,
+  "cases": [
+    {
+      "name": "shadowing",
+      "num_tokens": 34,
+      "num_blocks": 5,
+      "definition_tokens": 6,
+      "definition_blocks": 3,
+      "definition_use_pairs": 3,
+      "cross_block_pairs": 2,
+      "max_token_distance": 20,
+      "max_block_distance": 3,
+      "pairs": [
+        {
+          "token": "value",
+          "definition_index": 9,
+          "use_index": 14,
+          "distance": 5,
+          "definition_block": 1,
+          "use_block": 1,
+          "block_distance": 0,
+          "cross_block": false
+        },
+        {
+          "token": "items",
+          "definition_index": 6,
+          "use_index": 20,
+          "distance": 14,
+          "definition_block": 0,
+          "use_block": 2,
+          "block_distance": 2,
+          "cross_block": true
+        },
+        {
+          "token": "scale",
+          "definition_index": 4,
+          "use_index": 24,
+          "distance": 20,
+          "definition_block": 0,
+          "use_block": 3,
+          "block_distance": 3,
+          "cross_block": true
+        }
+      ]
+    },
+    {
+      "name": "long_range_import",
+      "num_tokens": 30,
+      "num_blocks": 4,
+      "definition_tokens": 6,
+      "definition_blocks": 3,
+      "definition_use_pairs": 3,
+      "cross_block_pairs": 3,
+      "max_token_distance": 24,
+      "max_block_distance": 3,
+      "pairs": [
+        {
+          "token": "math",
+          "definition_index": 1,
+          "use_index": 23,
+          "distance": 22,
+          "definition_block": 0,
+          "use_block": 2,
+          "block_distance": 2,
+          "cross_block": true
+        },
+        {
+          "token": "radius",
+          "definition_index": 5,
+          "use_index": 27,
+          "distance": 22,
+          "definition_block": 0,
+          "use_block": 3,
+          "block_distance": 3,
+          "cross_block": true
+        },
+        {
+          "token": "radius",
+          "definition_index": 5,
+          "use_index": 29,
+          "distance": 24,
+          "definition_block": 0,
+          "use_block": 3,
+          "block_distance": 3,
+          "cross_block": true
+        }
+      ]
+    },
+    {
+      "name": "guarded_attribute",
+      "num_tokens": 34,
+      "num_blocks": 5,
+      "definition_tokens": 7,
+      "definition_blocks": 3,
+      "definition_use_pairs": 5,
+      "cross_block_pairs": 3,
+      "max_token_distance": 18,
+      "max_block_distance": 2,
+      "pairs": [
+        {
+          "token": "self",
+          "definition_index": 6,
+          "use_index": 11,
+          "distance": 5,
+          "definition_block": 0,
+          "use_block": 1,
+          "block_distance": 1,
+          "cross_block": true
+        },
+        {
+          "token": "value",
+          "definition_index": 13,
+          "use_index": 15,
+          "distance": 2,
+          "definition_block": 1,
+          "use_block": 1,
+          "block_distance": 0,
+          "cross_block": false
+        },
+        {
+          "token": "box",
+          "definition_index": 19,
+          "use_index": 23,
+          "distance": 4,
+          "definition_block": 2,
+          "use_block": 2,
+          "block_distance": 0,
+          "cross_block": false
+        },
+        {
+          "token": "box",
+          "definition_index": 19,
+          "use_index": 29,
+          "distance": 10,
+          "definition_block": 2,
+          "use_block": 3,
+          "block_distance": 1,
+          "cross_block": true
+        },
+        {
+          "token": "value",
+          "definition_index": 13,
+          "use_index": 31,
+          "distance": 18,
+          "definition_block": 1,
+          "use_block": 3,
+          "block_distance": 2,
+          "cross_block": true
+        }
+      ]
+    }
+  ]
+}
