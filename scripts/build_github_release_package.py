@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 FILES = [
+    ".zenodo.json",
     "00_START_HERE.md",
     "README.md",
     "SUBMISSION_NOTES.md",
@@ -71,6 +72,7 @@ EXCLUDE_SUFFIXES = {
 }
 
 EXCLUDE_DIR_NAMES = {
+    ".git",
     "__pycache__",
     "__MACOSX",
 }
@@ -121,14 +123,30 @@ def zip_dir(source_dir: Path, zip_path: Path) -> None:
     zip_path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for path in source_dir.rglob("*"):
-            if path.is_file():
+            if path.is_file() and ".git" not in path.parts:
                 zf.write(path, path.relative_to(source_dir))
 
 
-def build(output_dir: Path, zip_path: Path) -> None:
-    if output_dir.exists():
+def clear_output_dir(output_dir: Path) -> None:
+    """Clear generated release files while preserving a Git checkout if present."""
+    if not output_dir.exists():
+        output_dir.mkdir(parents=True)
+        return
+    if not (output_dir / ".git").exists():
         shutil.rmtree(output_dir)
-    output_dir.mkdir(parents=True)
+        output_dir.mkdir(parents=True)
+        return
+    for path in output_dir.iterdir():
+        if path.name == ".git":
+            continue
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+
+
+def build(output_dir: Path, zip_path: Path) -> None:
+    clear_output_dir(output_dir)
 
     copied: List[str] = []
     for rel in FILES:

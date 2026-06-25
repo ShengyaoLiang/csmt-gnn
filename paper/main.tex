@@ -16,11 +16,14 @@
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{tabularx}
+\usepackage{array}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{corollary}{Corollary}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 
 \title{CSMT-GNN: Structure-Aware Contextual Variable Dropout for Code Language Models}
 
@@ -81,7 +84,7 @@ definitions, and uses.  CSMT-GNN is the architecture I built around that
 hypothesis, and the rest of the draft is me trying to keep that hypothesis from
 outrunning the evidence.
 
-This project also contains a correction of my own earlier framing.  I first
+There is also a correction of my own earlier framing.  I first
 called the masking operation a causal do-intervention.  That was too strong.  In
 Pearl's structural causal model, an intervention cuts the incoming mechanisms of
 a variable and replaces it with an externally set value.  My code does not
@@ -92,42 +95,47 @@ uncomfortable, but it made the work cleaner.  The honest name is
 definition-bearing blocks.  I would rather publish a smaller claim that can be
 tested than a larger one that collapses under inspection.
 
-The artifact I am submitting has five concrete pieces.  First, it defines a
-code-modeling architecture that combines block-local attention, trainable AST
-embeddings, prefix-masked block graph attention, gated graph-to-token
-injection, and top-$k$ mixture-of-experts (MoE) computation.  Second, it ships a
-cleaned implementation that removes several failure modes in the earlier
-prototype: random non-trainable AST embeddings, token-offset mismatch,
-block-size-specific softmax code, distorted CVD sampling, and a Python-loop MoE
-path that collapses throughput when specialized kernels are unavailable.  Third,
-it gives mathematical checks for prefix information flow, attention-edge count,
-AST gate stability, the cost boundary of the syntax channel, and the stochastic
-objective optimized by CVD.  Fourth, it documents the multi-LLM assisted
-development workflow that produced the first draft and the audit steps that made
-the artifact defensible.  Fifth, it gives the evaluation protocol I would trust
+The public artifact has five concrete pieces.  First, it defines a code-modeling
+architecture that combines block-local attention, trainable AST embeddings,
+prefix-masked block graph attention, gated graph-to-token injection, and
+top-$k$ mixture-of-experts (MoE) computation.  Second, it ships a cleaned
+implementation that removes several failure modes in the earlier prototype:
+random non-trainable AST embeddings, token-offset mismatch, block-size-specific
+softmax code, distorted CVD sampling, and a Python-loop MoE path that collapses
+throughput when specialized kernels are unavailable.  Third, it gives
+mathematical checks for prefix information flow, attention-edge count, AST gate
+stability, the cost boundary of the syntax channel, and the stochastic objective
+optimized by CVD.  Fourth, it documents the multi-LLM assisted development
+workflow that produced the first draft and the audit steps that made the
+artifact defensible.  Fifth, it gives the evaluation protocol I would trust
 before making a stronger claim.
 
-There is also a more personal reason I chose code as the target.  I do not
-think the next useful step for AI has to be making models imitate human
-consciousness or perform personhood.  I care more about whether models can
-become reliable productive instruments.  Code is one of the clearest places
-where that matters, because code is not only text; it is a production material
-for science, engineering, data analysis, and automation.  A model that writes
-fluent but structurally broken code does not merely make a language mistake.  It
-damages a tool chain.  That is why I designed CSMT-GNN around program structure
-rather than around a broader claim about reasoning in general.
+Beyond the architecture, this project argues for a workflow and a stance.  I care about code models
+because code is becoming a production material for science, engineering, data
+analysis, and automation.  I am less interested in making AI look human than in
+making it a reliable part of human productivity.  If generated code is fluent
+but structurally wrong, it does not merely fail as text; it damages a tool
+chain.  That is why I designed CSMT-GNN around program structure rather than
+around a broader claim about reasoning in general.
 
-This is also why I used multiple LLMs during the early implementation.  I was
-trying to find out whether an independent researcher could move from an
-architecture idea to a runnable artifact without institutional-scale support.
-The answer was partly yes and partly sobering.  Multi-LLM coding made the first
-prototype possible quickly, but it also produced overconfident names, repeated
-documentation, fragile kernels, and claims that were stronger than the code.  My
-later work was to take authorship back: delete, rename, test, and rewrite until
-the artifact said only what it could support.  I include that process because
-one claim of this release is methodological: in an AI-assisted research era, the
-scarce skill is not merely knowing every implementation detail in advance, but
-continuing to think, audit, and take responsibility for the result.
+I used multiple LLMs during early prototype development because I wanted to see
+whether an independent researcher could move from architecture thinking to a
+runnable artifact without institutional-scale support.  Different systems helped
+with different parts of the work: scaffolding, implementation, criticism, and
+documentation.  That made research feel less locked behind infrastructure: one
+person could explore preprocessors, kernels, training code, and documentation
+much faster.
+
+But the same workflow produced mistakes that serious science cannot keep:
+overconfident causal language, repeated docs, brittle hard-coded kernels, random
+offline AST embeddings, and code names that sounded more rigorous than the
+implementation.  My later work was audit and authorship: narrowing the claims,
+rewriting the code, removing the pseudo-causal frame, and making the artifact
+inspectable.  For the arXiv and public GitHub versions, I keep the fuller author
+story because the methodological claim matters too.  The lesson is not that AI
+tools make research automatic.  It is that more people can start from a serious
+question, use AI to reach a testable artifact, and then take responsibility for
+the result.
 
 I keep the claim deliberately narrow.  CSMT-GNN is a structure-aware code-model
 architecture and a runnable research artifact; it is not a proof that AST
@@ -401,50 +409,36 @@ to be a rough parameter neighbor of the tiny CSMT variants.  It is not a perfect
 matched study, but it is a stronger first control than comparing CSMT only
 against its own disabled configurations.
 
-\subsection{Multi-LLM Assisted Development}
+\subsection{Development Audit}
 
-The development path matters for this artifact.  In the early phase, I spent
-most of my energy on the architecture: what failure I wanted to attack, where
-the AST should enter, what the block graph should communicate, and how to avoid
-pretending that a neural mask was a formal causal intervention.  I then used
-several LLM systems as coding collaborators to turn those notes into a runnable
-prototype quickly.  I used multiple prompt families rather than a single chat
-thread because each model tended to expose different blind spots: one was better
-at scaffolding, another at kernel-shaped code, another at documentation, and
-another at criticizing claims.  This was not a replacement for authorship.  It
-was a way to make the search space reachable.
+The author workflow described in the introduction leaves a concrete audit trail.
+The early prototype was useful because it made the architecture runnable, but it
+also exposed failure modes that would have made the work indefensible if kept:
+causal terminology that the computation did not earn, repeated operation guides,
+a block-size-specific softmax path, random offline AST embeddings, distorted CVD
+sampling, and a Python-loop expert path that would collapse throughput when
+specialized kernels were unavailable.
 
-The experience changed my view of AI-assisted research.  A single model often
-failed when the task required architecture design, implementation, and
-self-critique at the same time.  A coordinated set of models could move faster,
-but only because I kept asking what the architecture was supposed to mean.  The
-important question was not whether I already knew every implementation detail.
-It was whether I kept thinking after the code appeared.  That distinction is
-important to me because independent researchers often lack compute, lab
-infrastructure, and specialized collaborators.  Multi-LLM development does not
-remove those limits, but it can lower the first barrier enough for a serious
-idea to become inspectable.
-
-The same process also created errors that I would not defend.  The first
-prototype overused causal language, repeated operation guides across files,
-contained a block-size-specific softmax path, and used names that sounded more
-rigorous than the computation beneath them.  My later work was therefore not
-just optimization; it was audit and authorship.  I renamed the unsupported
-do-intervention framing to CVD, rewrote AST handling around trainable ids,
-removed the brittle kernel from the reference path, added prefix inference
-features, corrected batch and padding semantics, added Transformer controls,
-and made the release package inspectable.  I include this history because one
-contribution of the artifact is the workflow itself: multi-LLM coordination can
-help an independent researcher reach a serious prototype, but only if the human
-author accepts responsibility for narrowing claims, deleting seductive but false
-language, and making the code auditable.
+The current reference implementation is the result of removing those weaknesses
+rather than polishing their names.  I renamed the unsupported do-intervention
+framing to CVD, moved AST handling to tokenizer-aligned ids with trainable
+embeddings, removed the brittle fused-kernel path from the reference
+implementation, added prefix inference features, corrected batch and padding
+semantics, added Transformer controls, and made the release package inspectable.
+This is why I treat the development process as part of the contribution.  I am
+not presenting multi-LLM coding as a substitute for authorship; I am presenting
+it as a way for an independent researcher to reach a testable artifact faster,
+provided the final work is audited, renamed where necessary, and stripped of
+claims the implementation cannot support.  The artifact is not only a proposed
+architecture, but also a record of which claims survived audit and which ones
+had to be deleted.
 
 \begin{table}[t]
   \centering
   \caption{Problems in the original prototype and their corresponding fixes.}
   \label{tab:fixes}
   \small
-  \begin{tabularx}{\textwidth}{@{}lXX@{}}
+  \begin{tabularx}{\textwidth}{@{}lYY@{}}
     \toprule
     Area & Original risk & Current fix \\
     \midrule
@@ -471,11 +465,11 @@ other block sizes.
 
 \section{Theoretical Checks and Complexity}
 
-I cannot replace training evidence with algebra.  What I can do is rule out some
-basic failure modes before spending compute: future leakage in the block graph,
-unbounded changes from the AST gate at initialization, fake claims about memory,
-and a CVD story that has no objective behind it.  These checks are modest, but
-they are the kind of evidence I can afford and the kind a reader can audit.
+Algebra cannot replace training evidence, but it can rule out basic failure
+modes before scaling: future leakage in the block graph, unbounded changes from
+the AST gate at initialization, unsupported memory claims, and a CVD story with
+no objective behind it.  These checks are deliberately modest; their purpose is
+to make the mechanism auditable before any performance claim is attached to it.
 
 \begin{proposition}[Prefix visibility]
 \label{prop:prefix}
@@ -802,7 +796,7 @@ with five uncomfortable questions that can break the mechanism quickly.
   like a benchmark, but to decide what should be tested before scaling the
   architecture.}
   \label{tab:stages}
-  \begin{tabularx}{\linewidth}{p{0.14\linewidth}p{0.28\linewidth}XX}
+  \begin{tabularx}{\linewidth}{P{0.14\linewidth}P{0.28\linewidth}YY}
     \toprule
     Stage & Run & Pass signal & Stop signal \\
     \midrule
