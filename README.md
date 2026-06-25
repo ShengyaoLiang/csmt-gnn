@@ -1,6 +1,6 @@
 # CSMT-GNN Research Workspace
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20840625.svg)](https://doi.org/10.5281/zenodo.20840625)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20840624.svg)](https://doi.org/10.5281/zenodo.20840624)
 
 I started CSMT-GNN from a stubborn question: if code is full of explicit
 structure, why should a code model have to rediscover all of that structure from
@@ -12,11 +12,12 @@ a complete package: paper source, reference code, diagnostic scripts, tests,
 submission notes, arXiv source packaging, and a public GitHub release builder.
 
 The public reproducibility repository is available at
-https://github.com/ShengyaoLiang/csmt-gnn. Archived releases are indexed under
-the Zenodo latest-record DOI https://doi.org/10.5281/zenodo.20840625. I release
-the source package, paper source, tests, small diagnostic artifacts, and
-packaging scripts so that the evidence chain can be inspected without relying
-on private training data, hidden scripts, or unpublished checkpoints.
+https://github.com/ShengyaoLiang/csmt-gnn. The current `v0.1.1` archived
+release is https://doi.org/10.5281/zenodo.20844185, and the stable all-version
+Zenodo concept DOI is https://doi.org/10.5281/zenodo.20840624. I release the
+source package, paper source, tests, small diagnostic artifacts, and packaging
+scripts so that the evidence chain can be inspected without relying on private
+training data, hidden scripts, or unpublished checkpoints.
 
 ## Scientific Position
 
