@@ -1100,9 +1100,10 @@ On my local laptop, I ran this diagnostic at
 \texttt{hidden\_size=16}, \texttt{max\_tokens=64}, and 12 steps per variant,
 plus small block-size and seed smoke sweeps.  The diagnostic now includes a pure
 token-only Transformer and a rough parameter-neighbor Transformer control.  The
-unit tests passed at 36/36 after adding fail-fast checks for the Transformer
-controls, incremental AST configuration checks, opt-in CVD audit coverage, and
-validated-pipeline input range controls.  The data-pipeline preflight also
+unit tests passed at 37/37 after adding fail-fast checks for the Transformer
+controls, incremental AST configuration checks, opt-in CVD audit coverage,
+validated-pipeline input range controls, and a regression test for token-level
+CVD masks on short next-token inputs.  The data-pipeline preflight also
 passed on the tiny diagnostic arrays, checking token ids, AST ids, block shapes,
 masks, and usable sequence lengths.
 The structural probe found cross-block definition-use pairs in all three

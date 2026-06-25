@@ -631,7 +631,7 @@ class CSMTModel(nn.Module):
                 raise ValueError(f"var_def_mask batch dimension must be {batch_size}, got {var_def_mask.size(0)}.")
 
             mask_width = var_def_mask.size(1)
-            looks_token_level = mask_width > self.config.num_blocks or mask_width == length
+            looks_token_level = mask_width > num_blocks or mask_width == length
             if looks_token_level:
                 token_level = var_def_mask[:, :length].to(device=input_ids.device, dtype=torch.bool)
                 if token_level.size(1) < length:

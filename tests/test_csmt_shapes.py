@@ -231,6 +231,18 @@ class CSMTShapeTests(unittest.TestCase):
         self.assertTrue(torch.equal(sampled, torch.tensor([[False, True, False]])))
         self.assertEqual(graph.last_cvd_audit["eligible_blocks"], 1.0)
 
+    def test_token_level_cvd_mask_uses_current_block_count(self) -> None:
+        config = CSMTConfig(**{**self.tiny_config().__dict__, "cvd_prob": 1.0, "cvd_audit": True})
+        model = CSMTModel(config)
+        model.train()
+        input_ids = torch.tensor([[1, 2, 3, 4, 5, 6]])
+        ast = torch.zeros(2, config.block_size, dtype=torch.long)
+        token_level_mask = torch.tensor([False, False, False, False, True, False])
+        model(input_ids, ast_type_ids=ast, var_def_mask=token_level_mask, lengths=torch.tensor([6]))
+        audit = model.cvd_audit_summary()
+        self.assertEqual(audit["eligible_blocks"], 1.0)
+        self.assertEqual(audit["sampled_blocks"], 1.0)
+
     def test_cvd_audit_is_opt_in(self) -> None:
         config = CSMTConfig(**{**self.tiny_config().__dict__, "cvd_prob": 1.0})
         graph = PrefixBlockGraph(config)

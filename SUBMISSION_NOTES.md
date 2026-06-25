@@ -21,7 +21,7 @@ The public metadata is stored in `arxiv_metadata.json` and `CITATION.cff`.
   adjustment.
 - The mechanism is Contextual Variable Dropout (CVD): structured value-message
   masking over definition-bearing blocks.
-- I do not claim frontier-scale or SOTA results.
+- I do not claim frontier-scale or best-known results.
 - I claim a corrected architecture, ablation-ready reference implementation,
   theoretical checks, a local diagnostic path, and an auditable multi-LLM
   assisted development workflow.

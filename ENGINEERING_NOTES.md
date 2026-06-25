@@ -75,6 +75,9 @@ rewrite.
   CVD can be compared with ordinary random block value replacement.
 - Variable-targeted CVD intersects definition masks with the valid-block mask,
   so padded blocks cannot be sampled as definition-bearing messages.
+- Token-level CVD masks are interpreted against the current forward pass block
+  count, so short sequences and next-token inputs do not get mistaken for
+  block-level masks just because they are shorter than the configured maximum.
 - The trainer computes next-token loss only over real, non-padding positions.
 - MoE fallback sorts top-k assignments into contiguous expert batches, skips
   absent experts, and exposes load-balancing/z-loss terms.
