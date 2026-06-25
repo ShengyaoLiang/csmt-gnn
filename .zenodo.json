@@ -1,0 +1,24 @@
+{
+  "title": "CSMT-GNN: Structure-Aware Contextual Variable Dropout for Code Language Models",
+  "upload_type": "software",
+  "description": "A structure-aware code language model prototype with tokenizer-aligned AST ids, prefix block graph attention, and Contextual Variable Dropout. This release accompanies an arXiv preprint and includes paper source, reference implementation, diagnostics, tests, and release packaging scripts.",
+  "creators": [
+    {
+      "name": "Liang, Shengyao",
+      "affiliation": "Independent Researcher",
+      "orcid": "0009-0002-3713-8700"
+    }
+  ],
+  "version": "0.1.0",
+  "access_right": "open",
+  "license": "mit",
+  "language": "eng",
+  "keywords": [
+    "code language models",
+    "abstract syntax trees",
+    "graph neural networks",
+    "contextual variable dropout",
+    "program analysis",
+    "multi-LLM assisted development"
+  ]
+}
