@@ -58,6 +58,7 @@ def make_model(args, scope: str, vocab_size: int, num_ast_types: int) -> CSMTMod
         boundary_width=1,
         cvd_prob=args.cvd_prob,
         cvd_scope=scope,
+        cvd_audit=True,
         use_ast_gate=True,
         use_block_graph=True,
         use_cvd=True,

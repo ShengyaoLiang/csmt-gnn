@@ -28,6 +28,14 @@ class IncrementalASTConfig:
     tokenizer_name_or_path: Optional[str] = None
     vocab_path: Optional[Path] = None
 
+    def __post_init__(self) -> None:
+        for name in ("block_size", "max_tokens"):
+            value = getattr(self, name)
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise TypeError(f"{name} must be an integer, got {type(value).__name__}")
+            if value <= 0:
+                raise ValueError(f"{name} must be positive, got {value}")
+
 
 @dataclass(frozen=True)
 class IncrementalASTResult:
@@ -96,11 +104,12 @@ def main() -> None:
     source = args.source_file.read_text(encoding="utf-8", errors="replace")
     repeat = max(1, args.repeat)
     start = time.perf_counter()
-    result = None
+    result: Optional[IncrementalASTResult] = None
     for _ in range(repeat):
         result = builder.build(source)
     elapsed_ms = (time.perf_counter() - start) * 1000.0
-    assert result is not None
+    if result is None:
+        raise RuntimeError("Incremental AST build did not produce a result.")
     ast_ids = result.ast_ids
     token_mask = result.token_var_mask
     valid_ast_ids = ast_ids[ast_ids != builder.vocab.type_to_id["<PAD>"]]

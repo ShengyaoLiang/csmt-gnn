@@ -28,10 +28,10 @@ def _is_real_number(value: object) -> bool:
     return isinstance(value, numbers.Real) and not isinstance(value, bool) and math.isfinite(float(value))
 
 
-def _validate_id_tensor(name: str, tensor: torch.Tensor, upper_bound: int) -> None:
+def _validate_id_tensor(name: str, tensor: torch.Tensor, upper_bound: int, check_range: bool = True) -> None:
     if tensor.dtype not in _ID_DTYPES:
         raise TypeError(f"{name} must contain int32 or int64 ids, got dtype={tensor.dtype}.")
-    if tensor.numel() == 0:
+    if tensor.numel() == 0 or not check_range:
         return
     if bool((tensor < 0).any()) or bool((tensor >= upper_bound).any()):
         min_id = int(tensor.min().item())
@@ -69,7 +69,9 @@ class CSMTConfig:
     boundary_width: int = 1
     cvd_prob: float = 0.05
     cvd_scope: str = "variable"
+    cvd_audit: bool = False
     dropout: float = 0.0
+    validate_input_ranges: bool = True
     tie_embeddings: bool = False
     use_ast_gate: bool = True
     use_block_graph: bool = True
@@ -113,6 +115,8 @@ class CSMTConfig:
             "use_ast_gate": self.use_ast_gate,
             "use_block_graph": self.use_block_graph,
             "use_cvd": self.use_cvd,
+            "cvd_audit": self.cvd_audit,
+            "validate_input_ranges": self.validate_input_ranges,
             "use_moe": self.use_moe,
             "use_boundary": self.use_boundary,
         }
@@ -304,38 +308,29 @@ class PrefixBlockGraph(nn.Module):
         self.cvd_replacement = nn.Parameter(torch.randn(d) * 0.02) if config.use_cvd else None
         self.last_cvd_audit: Dict[str, float] = {}
 
-    def _sample_cvd_mask(
-        self,
-        var_def_mask: Optional[torch.Tensor],
-        valid_block_mask: Optional[torch.Tensor],
-    ) -> Optional[torch.Tensor]:
-        if not self.config.use_cvd or not self.training or self.config.cvd_prob <= 0:
-            self.last_cvd_audit = {"eligible_blocks": 0.0, "sampled_blocks": 0.0, "valid_blocks": 0.0}
-            return None
-        if self.cvd_replacement is None:
-            raise RuntimeError("CVD is enabled, but cvd_replacement was not initialized.")
-        valid_count = float(valid_block_mask.to(dtype=torch.bool).sum().item()) if valid_block_mask is not None else 0.0
-        if self.config.cvd_scope == "variable":
-            if var_def_mask is None:
-                self.last_cvd_audit = {"eligible_blocks": 0.0, "sampled_blocks": 0.0, "valid_blocks": valid_count}
-                return None
-            eligible = var_def_mask.to(dtype=torch.bool, device=self.cvd_replacement.device)
-        else:
-            if valid_block_mask is None:
-                self.last_cvd_audit = {"eligible_blocks": 0.0, "sampled_blocks": 0.0, "valid_blocks": 0.0}
-                return None
-            eligible = valid_block_mask.to(dtype=torch.bool, device=self.cvd_replacement.device)
+    def _clear_cvd_audit(self, valid_block_mask: Optional[torch.Tensor] = None) -> None:
+        if not self.config.cvd_audit:
+            self.last_cvd_audit = {}
+            return
+        valid_count = 0.0
         if valid_block_mask is not None:
-            valid = valid_block_mask.to(dtype=torch.bool, device=eligible.device)
-            if valid.shape != eligible.shape:
-                raise ValueError(f"valid_block_mask shape {tuple(valid.shape)} must match eligible mask shape {tuple(eligible.shape)}.")
-            eligible = eligible & valid
-        if not bool(eligible.any()):
-            self.last_cvd_audit = {"eligible_blocks": 0.0, "sampled_blocks": 0.0, "valid_blocks": valid_count}
-            return None
-        mask = (torch.rand_like(eligible, dtype=torch.float32) < self.config.cvd_prob) & eligible
-        eligible_count = float(eligible.sum().item())
-        sampled_count = float(mask.sum().item())
+            valid_count = float(valid_block_mask.to(dtype=torch.bool).sum().detach().cpu().item())
+        self.last_cvd_audit = {"eligible_blocks": 0.0, "sampled_blocks": 0.0, "valid_blocks": valid_count}
+
+    def _record_cvd_audit(
+        self,
+        eligible: torch.Tensor,
+        mask: torch.Tensor,
+        valid_block_mask: Optional[torch.Tensor],
+    ) -> None:
+        if not self.config.cvd_audit:
+            self.last_cvd_audit = {}
+            return
+        valid_count = 0.0
+        if valid_block_mask is not None:
+            valid_count = float(valid_block_mask.to(dtype=torch.bool).sum().detach().cpu().item())
+        eligible_count = float(eligible.sum().detach().cpu().item())
+        sampled_count = float(mask.sum().detach().cpu().item())
         self.last_cvd_audit = {
             "eligible_blocks": eligible_count,
             "sampled_blocks": sampled_count,
@@ -343,7 +338,35 @@ class PrefixBlockGraph(nn.Module):
             "sample_rate": sampled_count / max(1.0, eligible_count),
             "scope_is_variable": 1.0 if self.config.cvd_scope == "variable" else 0.0,
         }
-        return mask if bool(mask.any()) else None
+
+    def _sample_cvd_mask(
+        self,
+        var_def_mask: Optional[torch.Tensor],
+        valid_block_mask: Optional[torch.Tensor],
+    ) -> Optional[torch.Tensor]:
+        if not self.config.use_cvd or not self.training or self.config.cvd_prob <= 0:
+            self._clear_cvd_audit(valid_block_mask)
+            return None
+        if self.cvd_replacement is None:
+            raise RuntimeError("CVD is enabled, but cvd_replacement was not initialized.")
+        if self.config.cvd_scope == "variable":
+            if var_def_mask is None:
+                self._clear_cvd_audit(valid_block_mask)
+                return None
+            eligible = var_def_mask.to(dtype=torch.bool, device=self.cvd_replacement.device)
+        else:
+            if valid_block_mask is None:
+                self._clear_cvd_audit(valid_block_mask)
+                return None
+            eligible = valid_block_mask.to(dtype=torch.bool, device=self.cvd_replacement.device)
+        if valid_block_mask is not None:
+            valid = valid_block_mask.to(dtype=torch.bool, device=eligible.device)
+            if valid.shape != eligible.shape:
+                raise ValueError(f"valid_block_mask shape {tuple(valid.shape)} must match eligible mask shape {tuple(eligible.shape)}.")
+            eligible = eligible & valid
+        mask = (torch.rand_like(eligible, dtype=torch.float32) < self.config.cvd_prob) & eligible
+        self._record_cvd_audit(eligible, mask, valid_block_mask)
+        return mask
 
     def forward(
         self,
@@ -535,7 +558,7 @@ class CSMTModel(nn.Module):
             raise ValueError("CSMTModel expects input_ids shaped [L] or [batch, L].")
 
         input_ids = input_ids[:, : self.config.max_tokens]
-        _validate_id_tensor("input_ids", input_ids, self.config.vocab_size)
+        _validate_id_tensor("input_ids", input_ids, self.config.vocab_size, self.config.validate_input_ranges)
         input_ids = input_ids.long()
         batch_size, length = input_ids.shape
         if length == 0:
@@ -577,7 +600,12 @@ class CSMTModel(nn.Module):
                     f"got {ast_type_ids.size(2)}."
                 )
             ast_type_ids = ast_type_ids[:, :num_blocks].to(device=input_ids.device)
-            _validate_id_tensor("ast_type_ids", ast_type_ids, self.config.num_ast_types)
+            _validate_id_tensor(
+                "ast_type_ids",
+                ast_type_ids,
+                self.config.num_ast_types,
+                self.config.validate_input_ranges,
+            )
             ast_type_ids = ast_type_ids.long()
             if ast_type_ids.size(1) < num_blocks:
                 pad_blocks = num_blocks - ast_type_ids.size(1)

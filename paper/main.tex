@@ -379,13 +379,18 @@ My cleaned implementation is organized around small, auditable entry points:
   \item The structural-probe script measures whether those diagnostic cases
   actually contain definition-use and cross-block structure.
   \item The CVD audit script records how often variable-targeted and random CVD
-  sample eligible blocks.
+  sample eligible blocks.  This accounting is opt-in because it synchronizes
+  device tensors for human-readable counts; the default training path samples
+  masks without asking Python whether any block was selected.
   \item \texttt{transformer\_baseline.py} implements a separate token-only
   causal Transformer, including a rough parameter-neighbor control used by the
-  tiny diagnostics.
+  tiny diagnostics.  It shares the same fail-fast token-id and length checks as
+  the CSMT path, so baseline runs do not silently repair malformed inputs.
   \item \texttt{csmt\_gnn.py} contains the reusable architecture, and
   \texttt{train.py} supports single-process and \texttt{torchrun} training over
-  paired token and AST NumPy files.
+  paired token and AST NumPy files.  Input id range scans are enabled by
+  default for fail-fast debugging, but can be disabled after the NumPy pipeline
+  is validated; dtype, shape, and length checks remain active.
   \item \texttt{scripts/diagnostic\_poc\_train.py} trains an ablation matrix on
   the diagnostic cases when PyTorch is available.
 \end{itemize}
@@ -451,11 +456,13 @@ had to be deleted.
     Causal claim & Mask framed as do-calculus & Renamed and scoped as CVD regularization \\
     Fused softmax & Hard-coded four chunks of 16 & Reference path uses dynamic block shape \\
     CVD sampling & Forced one mask per eligible sample & Bernoulli sampling with true zero-mask cases \\
+    CVD auditing & Per-step count sync in training path & Audit counts are opt-in; default sampling is synchronization-free \\
     Inference AST & Assumed complete-file parse & Prefix parser with lexical fallback \\
     Block boundaries & Hard cuts through syntax & Initially-zero causal boundary mixing before pooling \\
     MoE fallback & Token-wise dynamic dispatch & Sorted top-$k$ contiguous expert batches \\
     Ablations & Only baseline/full comparison & Component switches plus random-dropout control \\
     Documentation & Repeated guides inside code & Separate source files and paper artifact \\
+    Training checks & Per-step id range scans always on & Default fail-fast checks with an explicit validated-pipeline fast path \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -661,9 +668,9 @@ presentations with probability $1-(1-p_{\mathrm{cvd}})^T$.
 
 \begin{corollary}[Gradient exposure of the CVD replacement vector]
 \label{cor:cvd-gradient}
-The replacement vector $v_{\mathrm{cvd}}$ participates in the computation graph
-exactly on steps where at least one eligible block is sampled.  If an example has
-$D$ eligible blocks, that event has probability
+The replacement vector $v_{\mathrm{cvd}}$ receives gradient support only through
+positions whose value messages are sampled for replacement.  If an example has
+$D$ eligible blocks, at least one such position is sampled with probability
 $1-(1-p_{\mathrm{cvd}})^D$ on a single presentation and probability
 $1-(1-p_{\mathrm{cvd}})^{DT}$ across $T$ independent presentations.
 \end{corollary}
@@ -675,10 +682,11 @@ messages.  It is not a do-calculus intervention, and it gives no guarantee that
 structural hallucination will fall.  What it does guarantee is that the training
 objective explicitly includes predictions under definition-message replacement,
 with a tunable exposure probability.  It also explains why the old dummy-gradient
-trick was the wrong abstraction: the right statement is probabilistic exposure,
-not guaranteed participation on every step.  The reference trainer therefore
-leaves the optional L2 penalty on $v_{\mathrm{cvd}}$ disabled by default; turning
-it on is a practical stabilization choice, not part of the CVD objective above.
+trick was the wrong abstraction: the right statement is probabilistic gradient
+support, not guaranteed learning signal on every step.  The reference trainer
+therefore leaves the optional L2 penalty on $v_{\mathrm{cvd}}$ disabled by
+default; turning it on is a practical stabilization choice, not part of the CVD
+objective above.
 
 \begin{proposition}[Bounded CVD value perturbation]
 \label{prop:cvd-bound}
@@ -1088,7 +1096,9 @@ On my local laptop, I ran this diagnostic at
 \texttt{hidden\_size=16}, \texttt{max\_tokens=64}, and 12 steps per variant,
 plus small block-size and seed smoke sweeps.  The diagnostic now includes a pure
 token-only Transformer and a rough parameter-neighbor Transformer control.  The
-unit tests passed at 23/23.
+unit tests passed at 33/33 after adding fail-fast checks for the Transformer
+controls, incremental AST configuration checks, opt-in CVD audit coverage, and
+validated-pipeline input range controls.
 The structural probe found cross-block definition-use pairs in all three
 diagnostic cases.  The CVD audit recorded 72 variable-eligible blocks and 112
 random-control eligible blocks over 24 audited steps, with both sampling rates

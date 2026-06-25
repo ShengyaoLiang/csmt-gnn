@@ -156,7 +156,9 @@ def build_config(args) -> CSMTConfig:
         boundary_width=args.boundary_width,
         cvd_prob=args.cvd_prob,
         cvd_scope=args.cvd_scope,
+        cvd_audit=args.cvd_audit,
         dropout=args.dropout,
+        validate_input_ranges=not args.no_input_range_validation,
         tie_embeddings=args.tie_embeddings,
         use_ast_gate=not args.no_ast_gate,
         use_block_graph=not args.no_block_graph,
@@ -339,7 +341,13 @@ def parse_args():
     parser.add_argument("--boundary-width", type=int, default=1)
     parser.add_argument("--cvd-prob", type=float, default=0.05)
     parser.add_argument("--cvd-scope", choices=["variable", "random"], default="variable")
+    parser.add_argument("--cvd-audit", action="store_true", help="Record CVD sampling counts; useful for audits, but adds synchronization overhead.")
     parser.add_argument("--dropout", type=float, default=0.0)
+    parser.add_argument(
+        "--no-input-range-validation",
+        action="store_true",
+        help="Skip per-forward token/AST id range scans after the data pipeline has been validated.",
+    )
     parser.add_argument("--tie-embeddings", action="store_true")
     parser.add_argument("--no-ast-gate", action="store_true")
     parser.add_argument("--no-block-graph", action="store_true")

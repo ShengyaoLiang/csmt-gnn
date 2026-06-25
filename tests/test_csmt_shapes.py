@@ -41,6 +41,12 @@ class ASTVocabularyTests(unittest.TestCase):
             self.assertLessEqual(result.fallback_rate, 1.0)
             self.assertIn(1, result.ast_ids)
 
+    def test_incremental_ast_config_validates_shape_parameters(self) -> None:
+        with self.assertRaisesRegex(ValueError, "block_size must be positive"):
+            IncrementalASTConfig(block_size=0)
+        with self.assertRaisesRegex(TypeError, "max_tokens must be an integer"):
+            IncrementalASTConfig(max_tokens=32.0)
+
     def test_ast_extractor_reports_token_fallback_mask(self) -> None:
         extractor = ASTFeatureExtractor(ASTPreprocessConfig(block_size=4, max_tokens=32), TypeVocabulary())
         extractor.extract("def f(x:\n    return x +")
@@ -167,6 +173,18 @@ class CSMTShapeTests(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, "var_def_mask must be"):
             model(torch.tensor([[1, 2, 3]]), var_def_mask=torch.zeros(3, dtype=torch.float32))
 
+    def test_input_range_validation_can_be_disabled_after_pipeline_checks(self) -> None:
+        config = CSMTConfig(**{**self.tiny_config().__dict__, "validate_input_ranges": False})
+        model = CSMTModel(config)
+        logits = model(torch.tensor([[1, 2, 3]]), lengths=torch.tensor([3]))
+        self.assertEqual(tuple(logits.shape), (1, 3, config.vocab_size))
+        logits = model(torch.tensor([[1, 2, 3]]), ast_type_ids=torch.zeros(1, config.block_size, dtype=torch.long), lengths=torch.tensor([3]))
+        self.assertEqual(tuple(logits.shape), (1, 3, config.vocab_size))
+        with self.assertRaisesRegex(TypeError, "input_ids must contain"):
+            model(torch.tensor([[1.0, 2.0]]))
+        with self.assertRaisesRegex(ValueError, "lengths must be in"):
+            model(torch.tensor([[1, 2, 3]]), lengths=torch.tensor([4]))
+
     def test_ablation_toggles_preserve_forward_shape(self) -> None:
         toggle_sets = [
             {"use_ast_gate": False},
@@ -202,7 +220,7 @@ class CSMTShapeTests(unittest.TestCase):
         self.assertTrue(torch.equal(sampled, valid))
 
     def test_variable_cvd_ignores_padding_blocks(self) -> None:
-        config = CSMTConfig(**{**self.tiny_config().__dict__, "cvd_prob": 1.0})
+        config = CSMTConfig(**{**self.tiny_config().__dict__, "cvd_prob": 1.0, "cvd_audit": True})
         graph = PrefixBlockGraph(config)
         graph.train()
         z = torch.randn(1, 3, config.hidden_size)
@@ -211,6 +229,18 @@ class CSMTShapeTests(unittest.TestCase):
         _, sampled = graph(z, var_def_mask=var_defs, valid_block_mask=valid)
         self.assertIsNotNone(sampled)
         self.assertTrue(torch.equal(sampled, torch.tensor([[False, True, False]])))
+        self.assertEqual(graph.last_cvd_audit["eligible_blocks"], 1.0)
+
+    def test_cvd_audit_is_opt_in(self) -> None:
+        config = CSMTConfig(**{**self.tiny_config().__dict__, "cvd_prob": 1.0})
+        graph = PrefixBlockGraph(config)
+        graph.train()
+        z = torch.randn(1, 2, config.hidden_size)
+        var_defs = torch.tensor([[True, False]])
+        valid = torch.tensor([[True, True]])
+        _, sampled = graph(z, var_def_mask=var_defs, valid_block_mask=valid)
+        self.assertIsNotNone(sampled)
+        self.assertEqual(graph.last_cvd_audit, {})
 
     def test_no_moe_uses_dense_ffn(self) -> None:
         config = CSMTConfig(**{**self.tiny_config().__dict__, "use_moe": False})
@@ -233,6 +263,52 @@ class CSMTShapeTests(unittest.TestCase):
         input_ids = torch.tensor([[1, 2, 3, 0], [4, 5, 0, 0]])
         logits = model(input_ids, lengths=torch.tensor([3, 2]))
         self.assertEqual(tuple(logits.shape), (2, 4, config.vocab_size))
+
+    def test_tiny_transformer_rejects_invalid_inputs(self) -> None:
+        config = TransformerBaselineConfig(
+            vocab_size=64,
+            num_layers=1,
+            hidden_size=16,
+            max_tokens=16,
+            num_heads=4,
+            ffn_multiplier=1.5,
+        )
+        model = TinyCausalTransformer(config)
+        with self.assertRaisesRegex(TypeError, "input_ids must contain"):
+            model(torch.tensor([[1.0, 2.0]]))
+        with self.assertRaisesRegex(ValueError, "input_ids ids must be"):
+            model(torch.tensor([[1, config.vocab_size]]))
+        with self.assertRaisesRegex(TypeError, "lengths must contain"):
+            model(torch.tensor([[1, 2, 3]]), lengths=torch.tensor([3.0]))
+        with self.assertRaisesRegex(ValueError, "lengths must be in"):
+            model(torch.tensor([[1, 2, 3]]), lengths=torch.tensor([4]))
+
+    def test_tiny_transformer_config_validates_types(self) -> None:
+        with self.assertRaisesRegex(TypeError, "hidden_size must be an integer"):
+            TransformerBaselineConfig(hidden_size=16.0)
+        with self.assertRaisesRegex(TypeError, "tie_embeddings must be a bool"):
+            TransformerBaselineConfig(tie_embeddings=1)
+        with self.assertRaisesRegex(TypeError, "validate_input_ranges must be a bool"):
+            TransformerBaselineConfig(validate_input_ranges=1)
+
+    def test_tiny_transformer_range_validation_can_be_disabled(self) -> None:
+        config = TransformerBaselineConfig(
+            vocab_size=64,
+            num_layers=1,
+            hidden_size=16,
+            max_tokens=16,
+            num_heads=4,
+            ffn_multiplier=1.5,
+            validate_input_ranges=False,
+        )
+        model = TinyCausalTransformer(config)
+        logits = model(torch.tensor([[1, 2, 3]]), lengths=torch.tensor([3]))
+        self.assertEqual(tuple(logits.shape), (1, 3, config.vocab_size))
+        with self.assertRaisesRegex(TypeError, "lengths must contain"):
+            model(torch.tensor([[1, 2, 3]]), lengths=torch.tensor([3.0]))
+        with self.assertRaisesRegex(ValueError, "lengths must be in"):
+            model(torch.tensor([[1, 2, 3]]), lengths=torch.tensor([4]))
+
 
     def test_tiny_transformer_is_causal(self) -> None:
         config = TransformerBaselineConfig(

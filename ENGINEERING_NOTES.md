@@ -32,6 +32,8 @@ rewrite.
   attributes, destructuring, loop targets, and use-only negatives.
 - Incremental inference uses prefix AST extraction rather than assuming a
   complete parse is available.
+- Incremental AST configuration now validates `block_size` and `max_tokens`,
+  and the command-line path no longer relies on Python `assert` statements.
 - Prefix inference freezes a saved AST vocabulary and reports `unknown_rate`, so
   unseen node types do not create embedding ids outside the training vocabulary.
 - The paper now defines `fallback_rate`, `unknown_rate`, and prefix/full AST
@@ -44,6 +46,8 @@ rewrite.
 - `--per-token-prefix` fails explicitly if tree-sitter is unavailable.
 - CVD samples with the configured Bernoulli probability instead of forcing one
   masked block per eligible sample.
+- CVD sampling counters are opt-in through `cvd_audit`; default training avoids
+  per-step CPU synchronization for human-readable CVD counts.
 - The reference model uses dynamic block shapes and no hard-coded `B=64`
   Triton softmax path.
 - The model and trainer support true `[batch, tokens]` micro-batches.
@@ -51,6 +55,10 @@ rewrite.
   real block content.
 - Model inputs now fail early on invalid token ids, AST ids, mask dtypes, and
   out-of-range lengths instead of silently clamping or truncating metadata.
+- `validate_input_ranges` keeps token/AST id range scans enabled by default, but
+  `train.py --no-input-range-validation` can skip those large-tensor scans after
+  the data pipeline has been checked; dtype, shape, and length validation remain
+  active.
 - Shared two-dimensional AST ids and definition masks can be broadcast across a
   batch, matching the documented single-example feature format.
 - AST pooling handles all-padding blocks without producing NaNs.
@@ -84,6 +92,8 @@ rewrite.
   Transformer control is not just a CSMT configuration with features disabled.
 - The diagnostic script includes `transformer_matched`, a rough
   parameter-neighbor Transformer control for the tiny CSMT variants.
+- The Transformer controls now share the same fail-fast input contract as the
+  CSMT model for token ids, integer lengths, and out-of-range metadata.
 
 ## Minimal Checks
 

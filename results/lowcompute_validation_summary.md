@@ -14,7 +14,9 @@ This is a local mechanism-check record, not a benchmark result.
 ## Stage 0
 
 - `py_compile`: passed
-- Unit tests: 23/23 passed with PyTorch CPU
+- Unit tests: 33/33 passed with PyTorch CPU after adding fail-fast Transformer
+  baseline checks, incremental AST configuration checks, and opt-in CVD audit
+  coverage plus validated-pipeline input range controls
 - Definition-mask tests: passed; assignment, parameters, imports, attributes, destructuring, for-targets, and use-only negatives covered
 - Offline AST preprocessing now defaults to complete-file parsing; prefix parsing is explicit for inference/degradation checks
 - Prefix AST fallback_rate: 0.3846
@@ -43,6 +45,9 @@ The table supports the block-local plus block-graph communication story, while k
 | `guarded_attribute` | 34 | 5 | 7 | 5 | 3 | 2 |
 
 ## CVD Mask Audit
+
+Sampling-count synchronization is disabled in the default training path and
+enabled explicitly for this audit.
 
 | Scope | Eligible blocks | Sampled blocks | Valid blocks | Sample rate |
 |---|---:|---:|---:|---:|

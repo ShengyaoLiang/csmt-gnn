@@ -168,6 +168,13 @@ python scripts\cvd_mask_audit.py --output results\cvd_mask_audit.json `
   --steps 24 --hidden-size 16 --ast-dim 8 --block-size 8 --max-tokens 64
 ```
 
+The model keeps CVD sampling statistics off by default to avoid per-step device
+synchronization during training. The audit script enables the same counters
+explicitly, so mechanism inspection and the training fast path remain separate.
+For curated NumPy pipelines that have already been validated, `train.py` also
+offers `--no-input-range-validation` to skip per-forward token/AST id range
+scans. Shape, dtype, and sequence-length checks remain active.
+
 Run the tiny diagnostic training sanity check when PyTorch is installed:
 
 ```powershell

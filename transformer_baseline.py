@@ -14,7 +14,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from csmt_gnn import ExpertMLP, RMSNorm
+from csmt_gnn import ExpertMLP, RMSNorm, _is_real_number, _validate_id_tensor, _validate_length_tensor
 
 
 @dataclass
@@ -26,17 +26,30 @@ class TransformerBaselineConfig:
     num_heads: int = 12
     ffn_multiplier: float = 2.0
     dropout: float = 0.0
+    validate_input_ranges: bool = True
     tie_embeddings: bool = False
 
     def __post_init__(self) -> None:
         for name in ("vocab_size", "num_layers", "hidden_size", "max_tokens", "num_heads"):
             value = getattr(self, name)
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise TypeError(f"{name} must be an integer, got {type(value).__name__}")
             if value <= 0:
                 raise ValueError(f"{name} must be positive, got {value}")
+        for name in ("ffn_multiplier", "dropout"):
+            value = getattr(self, name)
+            if not _is_real_number(value):
+                raise TypeError(f"{name} must be a finite real number, got {value!r}")
+        for name in ("validate_input_ranges", "tie_embeddings"):
+            value = getattr(self, name)
+            if not isinstance(value, bool):
+                raise TypeError(f"{name} must be a bool, got {type(value).__name__}")
         if self.hidden_size % self.num_heads != 0:
             raise ValueError("hidden_size must be divisible by num_heads")
         if self.ffn_multiplier <= 0:
             raise ValueError("ffn_multiplier must be positive")
+        if int(self.hidden_size * self.ffn_multiplier) <= 0:
+            raise ValueError("hidden_size * ffn_multiplier must produce at least one FFN channel")
         if not 0.0 <= self.dropout < 1.0:
             raise ValueError("dropout must be in [0, 1)")
 
@@ -113,14 +126,22 @@ class TinyCausalTransformer(nn.Module):
             raise ValueError("TinyCausalTransformer expects input_ids shaped [L] or [batch, L].")
 
         input_ids = input_ids[:, : self.config.max_tokens]
+        _validate_id_tensor("input_ids", input_ids, self.config.vocab_size, self.config.validate_input_ranges)
+        input_ids = input_ids.long()
         batch, length = input_ids.shape
+        if length == 0:
+            raise ValueError("input_ids must contain at least one token after max_tokens truncation.")
         if lengths is None:
             lengths = torch.full((batch,), length, dtype=torch.long, device=input_ids.device)
         else:
-            lengths = lengths.to(device=input_ids.device, dtype=torch.long).view(-1)
+            _validate_length_tensor("lengths", lengths)
+            lengths = lengths.to(device=input_ids.device).view(-1).long()
             if lengths.numel() != batch:
                 raise ValueError(f"lengths must have batch dimension {batch}, got {lengths.numel()}.")
-            lengths = lengths.clamp(min=0, max=length)
+            if bool((lengths < 0).any()) or bool((lengths > length).any()):
+                min_len = int(lengths.min().item())
+                max_len = int(lengths.max().item())
+                raise ValueError(f"lengths must be in [0, {length}] after max_tokens truncation, got min={min_len}, max={max_len}.")
 
         positions = torch.arange(length, device=input_ids.device).clamp_max(self.config.max_tokens - 1)
         valid_mask = positions.view(1, -1) < lengths.view(-1, 1)

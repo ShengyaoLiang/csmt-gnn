@@ -10,7 +10,7 @@
   },
   "stage0": {
     "py_compile": "passed",
-    "unit_tests": "23/23 passed with PyTorch CPU",
+    "unit_tests": "33/33 passed with PyTorch CPU after CVD audit and input-range fast-path hardening",
     "definition_mask_tests": "passed; assignment, parameters, imports, attributes, destructuring, for-targets, and use-only negatives covered",
     "structural_probe_eval": {
       "purpose": "structural diagnostic coverage; not model accuracy",
@@ -59,6 +59,7 @@
       "num_tokens": 13
     },
     "cvd_mask_audit": {
+      "accounting_mode": "CVD sampling-count synchronization is opt-in through cvd_audit and disabled in the default training path",
       "variable": {
         "eligible_blocks": 72.0,
         "sampled_blocks": 16.0,
