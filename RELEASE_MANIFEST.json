@@ -1,6 +1,6 @@
 {
   "package": "csmt-gnn-github-release",
-  "built_at_utc": "2026-06-25T07:05:23.638602+00:00",
+  "built_at_utc": "2026-06-25T07:23:42.936696+00:00",
   "purpose": "public release package accompanying the arXiv preprint",
   "target": "arXiv public preprint",
   "files": [

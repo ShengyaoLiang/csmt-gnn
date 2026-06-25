@@ -41,24 +41,25 @@ ORCID: \url{https://orcid.org/0009-0002-3713-8700}
 \maketitle
 
 \begin{abstract}
-I began CSMT-GNN after repeatedly seeing code models produce fluent programs
-whose local syntax was correct while the relation that made the code meaningful
-had slipped away.  My early notes called this a causal hallucination; in this
-draft I use the narrower term structural hallucination, because I learned that
-the implementation did not earn a formal causal claim.  CSMT-GNN is my attempt
-to give a token language model a small amount of explicit program structure
-without turning it into a pure graph model.  It combines block-local Transformer
-computation, tokenizer-aligned AST ids, autoregressive block-level graph message
-passing, a residual AST gate, and a lightweight regularizer called Contextual
-Variable Dropout (CVD).  I also treat the development process as part of the
-artifact: the first prototype was produced through multi-LLM assisted coding and
-then rewritten after audit, which exposed both the speed and the danger of that
-workflow.  This submission is the corrected artifact: a runnable reference
-implementation, theoretical checks for information flow and training dynamics,
-an explicit cost boundary for the AST side channel, an open release package, and
-an evaluation plan for testing whether syntax-aware block states reduce
-structural code hallucination.  I do not claim frontier-scale results.  I claim
-that the idea and the workflow are now honest enough to be tested.
+Code language models can suffer from \emph{structural hallucination}: they
+produce syntactically fluent programs while silently breaking program
+dependencies, such as shadowed variables, invalid imports, or guards that no
+longer protect later accesses.  To mitigate this failure mode, I propose
+CSMT-GNN, a structure-aware code language model prototype that keeps token
+generation primary while injecting tokenizer-aligned AST ids and prefix-masked
+block graph states.  The architecture combines block-local Transformer
+computation, residual AST-gated pooling, autoregressive block-level graph
+message passing, graph-to-token injection, and Contextual Variable Dropout
+(CVD), a structured regularizer over definition-bearing blocks.  I also treat
+the development process as part of the artifact: the first prototype was
+produced through multi-LLM assisted coding and then rewritten after audit, which
+exposed both the speed and the danger of that workflow.  This release provides a
+runnable reference implementation, theoretical checks for information flow and
+training dynamics, an explicit cost boundary for the AST side channel, local
+mechanism diagnostics, and a staged evaluation plan.  I do not claim
+frontier-scale results.  I claim that the idea and the workflow are now honest
+enough to be tested.  \textbf{Code and reproducible scripts:
+\href{https://github.com/ShengyaoLiang/csmt-gnn}{https://github.com/ShengyaoLiang/csmt-gnn}.}
 \end{abstract}
 
 \section{Introduction}
@@ -144,6 +145,9 @@ frontier-scale empirical result.  CVD is treated as structured stochastic
 regularization rather than a formal do-intervention.  The purpose of this
 release is to make the architecture, its assumptions, and its failure modes
 inspectable enough for others to test.
+
+\noindent\textbf{Code and reproducible scripts:
+\href{https://github.com/ShengyaoLiang/csmt-gnn}{https://github.com/ShengyaoLiang/csmt-gnn}.}
 
 \section{Related Work}
 
@@ -464,12 +468,15 @@ implementation is more valuable than a fast path with undefined behavior at
 other block sizes.
 
 \section{Theoretical Checks and Complexity}
+\label{sec:theory}
 
 Algebra cannot replace training evidence, but it can rule out basic failure
 modes before scaling: future leakage in the block graph, unbounded changes from
 the AST gate at initialization, unsupported memory claims, and a CVD story with
 no objective behind it.  These checks are deliberately modest; their purpose is
 to make the mechanism auditable before any performance claim is attached to it.
+Detailed proofs are collected in Appendix~\ref{app:proofs}, so the main text can
+stay focused on what each statement means for the architecture.
 
 \begin{proposition}[Prefix visibility]
 \label{prop:prefix}
@@ -480,17 +487,6 @@ state used to predict token $t+1$ is a function only of tokens and AST spans in
 the prefix $x_{1:t}$.
 \end{proposition}
 
-\begin{proof}
-Inside a block, causal self-attention prevents position $b$ from reading
-positions greater than $b$.  The block graph receives pooled summaries from
-blocks with index at most the current block; with the injection shift used in
-Section 3.5, block $m$ receives only graph state from blocks $<m$.  Therefore no
-later block can affect the current token state.  The remaining possible leakage
-source is preprocessing: if AST ids are built from the complete file, a token can
-receive node information created by later syntax.  The per-token prefix mode
-removes that source by construction, because the parser input ends at the token
-boundary.  Composing these three facts gives the prefix dependence claim.
-\end{proof}
 
 The default offline training preprocessor uses complete-file parsing for
 cleaner syntax labels and definition masks.  Proposition~\ref{prop:prefix} is
@@ -517,16 +513,6 @@ $(m-1)B+b$.  In particular, the boundary module cannot transmit information
 from block $m$ or any later block into block $m-1$.
 \end{proposition}
 
-\begin{proof}
-The update to block $m$ depends on two quantities: the current token state
-$\tilde H_{m,b}$ and the previous-block tail $\tilde H_{m-1,B}$.  By causal
-block attention, $\tilde H_{m,b}$ depends only on tokens within block $m$ up to
-position $b$, and by the premise $\tilde H_{m-1,B}$ depends only on tokens up to
-the end of block $m-1$.  Their sum therefore depends only on the union of those
-prefixes, which is exactly the token prefix ending at $(m-1)B+b$.  The module
-contains no path from block $m$ to block $m-1$, because the projection is applied
-from the previous block tail to the current block head only.
-\end{proof}
 
 \begin{proposition}[Attention-edge count]
 \label{prop:edges}
@@ -545,14 +531,6 @@ asymptotic order.  If $B$ is allowed to scale with $L$, choosing
 $B=\Theta(L^{1/3})$ balances the two terms and gives $O(L^{4/3})$ edges.
 \end{proposition}
 
-\begin{proof}
-The full causal mask is triangular over $L$ positions.  Each of the $M$ local
-blocks contributes $B(B+1)/2$ causal edges.  The prefix block graph is triangular
-over $M$ block nodes, contributing $M(M+1)/2$ edges.  Dividing the structured
-edge count by the full edge count gives the displayed ratio.  Substituting
-$M=L/B$ gives $O(LB)+O(L^2/B^2)$ edges.  The two terms balance when
-$LB=L^2/B^2$, i.e. $B=\Theta(L^{1/3})$, yielding $O(L^{4/3})$ edges.
-\end{proof}
 
 This edge count does not say the implementation is automatically faster.  It
 says where the architecture moves communication: from dense token-token
@@ -575,12 +553,6 @@ Thus no single fixed block size is theoretically privileged across all sequence
 lengths and hardware constants.
 \end{corollary}
 
-\begin{proof}
-Differentiate $T(B)$ with respect to $B$:
-$T'(B)=aL-2bL^2/B^3$.  Setting $T'(B)=0$ gives
-$B^3=2bL/a$.  The second derivative $6bL^2/B^4$ is positive, so this critical
-point is a minimum.
-\end{proof}
 
 This corollary is why I treat block size as an experimental variable rather
 than a magic number.  The reference code supports arbitrary positive block sizes
@@ -601,16 +573,6 @@ $H'_{j,b}$ in block $j$.  A block-local Transformer layer without cross-block
 communication has no such one-layer path.
 \end{proposition}
 
-\begin{proof}
-In the prefix block graph, state $s_{j-1}$ is computed by attention over block
-states $z_1,\ldots,z_{j-1}$, which includes $z_i$.  The graph-to-token injection
-then maps $s_{j-1}$ through $W_c$, gates it with a token-dependent gate, and adds
-the result to every token in block $j$.  This gives the path
-$z_i\rightarrow s_{j-1}\rightarrow c_j\rightarrow H'_{j,b}$.  In a layer whose
-attention is restricted to tokens inside each block, the output of block $j$ is
-a function only of block $j$'s input tokens, so no one-layer path from block
-$i<j$ exists.
-\end{proof}
 
 This is the structural reason I added the graph.  It does not force the model to
 use a distant block, but it makes the route available without asking token-level
@@ -628,13 +590,6 @@ each coordinate of the gate lies in $[1-\lambda,1+\lambda]$, and
 \]
 \end{proposition}
 
-\begin{proof}
-For every coordinate, $\tanh(\cdot)\in[-1,1]$, so
-$g_i\in[1-\lambda,1+\lambda]$.  Since $g_i$ is nonnegative when
-$\lambda<1$, the squared norm of the gated vector is bounded between
-$(1-\lambda)^2\sum_i H_i^2$ and $(1+\lambda)^2\sum_i H_i^2$.  Taking square
-roots proves the claim.
-\end{proof}
 
 This is why I use a residual gate instead of a sigmoid gate.  A sigmoid starts
 near $1/2$ and immediately rescales the hidden stream.  The residual gate starts
@@ -657,14 +612,6 @@ $\eta>0$, then the AST side channel improves the deployment objective only when
 \]
 \end{proposition}
 
-\begin{proof}
-Setting $W_{\mathrm{ast}}=0$ makes the residual gate exactly one in every
-coordinate, so every no-AST model is represented inside the AST-gated family.
-Taking an infimum of the same empirical loss over a superset cannot increase
-the optimum.  The deployment inequality follows by expanding
-$J(f_{\mathrm{ast}}^\star)<J(f_0^\star)$ and moving the compute term to the
-right-hand side.
-\end{proof}
 
 This proposition is deliberately plain.  It does not say optimization will find
 the better member of the larger family, and it does not say the added structure
@@ -692,16 +639,6 @@ the same side channel used in offline training and must be cached, throttled,
 regularized against, or removed.
 \end{proposition}
 
-\begin{proof}
-The three rates are empirical averages over token-level Bernoulli indicators.
-They are therefore in $[0,1]$ and measure distinct failure modes: parser
-recovery or lexical fallback, vocabulary mismatch, and disagreement with a
-complete-file parse after the file is known.  A model trained on complete-file
-or low-fallback AST ids receives a shifted side input when these rates grow.
-The proposition is a measurement contract rather than a performance guarantee:
-it identifies when inference-time AST conditioning has drifted from the training
-artifact.
-\end{proof}
 
 \begin{proposition}[CVD as stochastic smoothing]
 \label{prop:cvd}
@@ -721,14 +658,6 @@ Moreover, a given eligible block is masked at least once in $T$ independent
 presentations with probability $1-(1-p_{\mathrm{cvd}})^T$.
 \end{proposition}
 
-\begin{proof}
-The implementation samples $\xi$ and evaluates the loss for that sampled masked
-graph.  The stochastic gradient is therefore the gradient of one draw from the
-inner expectation.  Under the usual interchange conditions used for stochastic
-gradient training, its expectation equals
-$\nabla_\theta \mathcal{L}_{\mathrm{cvd}}(\theta)$.  The second statement is the
-complement of never sampling the block in $T$ independent Bernoulli trials.
-\end{proof}
 
 \begin{corollary}[Gradient exposure of the CVD replacement vector]
 \label{cor:cvd-gradient}
@@ -739,12 +668,6 @@ $1-(1-p_{\mathrm{cvd}})^D$ on a single presentation and probability
 $1-(1-p_{\mathrm{cvd}})^{DT}$ across $T$ independent presentations.
 \end{corollary}
 
-\begin{proof}
-The vector $v_{\mathrm{cvd}}$ is used only when some Bernoulli mask is one.  The
-probability that all $D$ masks are zero is $(1-p_{\mathrm{cvd}})^D$, and the
-same complement argument over $DT$ independent trials gives the multi-pass
-statement.
-\end{proof}
 
 This proposition is the right mathematical description of CVD.  It is a
 structured stochastic smoothing objective over definition-bearing block
@@ -769,15 +692,6 @@ changes the head output by at most
 \]
 \end{proposition}
 
-\begin{proof}
-The unmasked head output is $o_q=\sum_m a_{qm}V_m$ and the masked output is
-$\tilde o_q=\sum_{m\notin\mathcal{S}}a_{qm}V_m+
-\sum_{m\in\mathcal{S}}a_{qm}v_{\mathrm{cvd}}$.  Their difference is
-$\tilde o_q-o_q=\sum_{m\in\mathcal{S}}a_{qm}(v_{\mathrm{cvd}}-V_m)$.  By the
-triangle inequality and the norm bounds,
-$\|\tilde o_q-o_q\|_2\le\sum_{m\in\mathcal{S}}a_{qm}
-(\|v_{\mathrm{cvd}}\|_2+\|V_m\|_2)\le 2R\sum_{m\in\mathcal{S}}a_{qm}$.
-\end{proof}
 
 This bound is another reason I prefer the CVD framing.  The operation is a
 controlled value-message perturbation whose size depends on attention mass over
@@ -958,6 +872,113 @@ diagnostic harness whose assumptions are visible enough to inspect and challenge
 \bibliography{references}
 
 \appendix
+
+\section{Proofs for the Theoretical Checks}
+\label{app:proofs}
+
+\begin{proof}[Proof of Proposition~\ref{prop:prefix}]
+Inside a block, causal self-attention prevents position $b$ from reading
+positions greater than $b$.  The block graph receives pooled summaries from
+blocks with index at most the current block; with the injection shift used in
+Section 3.5, block $m$ receives only graph state from blocks $<m$.  Therefore no
+later block can affect the current token state.  The remaining possible leakage
+source is preprocessing: if AST ids are built from the complete file, a token can
+receive node information created by later syntax.  The per-token prefix mode
+removes that source by construction, because the parser input ends at the token
+boundary.  Composing these three facts gives the prefix dependence claim.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:boundary}]
+The update to block $m$ depends on two quantities: the current token state
+$\tilde H_{m,b}$ and the previous-block tail $\tilde H_{m-1,B}$.  By causal
+block attention, $\tilde H_{m,b}$ depends only on tokens within block $m$ up to
+position $b$, and by the premise $\tilde H_{m-1,B}$ depends only on tokens up to
+the end of block $m-1$.  Their sum therefore depends only on the union of those
+prefixes, which is exactly the token prefix ending at $(m-1)B+b$.  The module
+contains no path from block $m$ to block $m-1$, because the projection is applied
+from the previous block tail to the current block head only.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:edges}]
+The full causal mask is triangular over $L$ positions.  Each of the $M$ local
+blocks contributes $B(B+1)/2$ causal edges.  The prefix block graph is triangular
+over $M$ block nodes, contributing $M(M+1)/2$ edges.  Dividing the structured
+edge count by the full edge count gives the displayed ratio.  Substituting
+$M=L/B$ gives $O(LB)+O(L^2/B^2)$ edges.  The two terms balance when
+$LB=L^2/B^2$, i.e. $B=\Theta(L^{1/3})$, yielding $O(L^{4/3})$ edges.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:block-size}]
+Differentiate $T(B)$ with respect to $B$:
+$T'(B)=aL-2bL^2/B^3$.  Setting $T'(B)=0$ gives
+$B^3=2bL/a$.  The second derivative $6bL^2/B^4$ is positive, so this critical
+point is a minimum.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:path}]
+In the prefix block graph, state $s_{j-1}$ is computed by attention over block
+states $z_1,\ldots,z_{j-1}$, which includes $z_i$.  The graph-to-token injection
+then maps $s_{j-1}$ through $W_c$, gates it with a token-dependent gate, and adds
+the result to every token in block $j$.  This gives the path
+$z_i\rightarrow s_{j-1}\rightarrow c_j\rightarrow H'_{j,b}$.  In a layer whose
+attention is restricted to tokens inside each block, the output of block $j$ is
+a function only of block $j$'s input tokens, so no one-layer path from block
+$i<j$ exists.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:gate}]
+For every coordinate, $\tanh(\cdot)\in[-1,1]$, so
+$g_i\in[1-\lambda,1+\lambda]$.  Since $g_i$ is nonnegative when
+$\lambda<1$, the squared norm of the gated vector is bounded between
+$(1-\lambda)^2\sum_i H_i^2$ and $(1+\lambda)^2\sum_i H_i^2$.  Taking square
+roots proves the claim.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:ast-cost}]
+Setting $W_{\mathrm{ast}}=0$ makes the residual gate exactly one in every
+coordinate, so every no-AST model is represented inside the AST-gated family.
+Taking an infimum of the same empirical loss over a superset cannot increase
+the optimum.  The deployment inequality follows by expanding
+$J(f_{\mathrm{ast}}^\star)<J(f_0^\star)$ and moving the compute term to the
+right-hand side.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:prefix-metrics}]
+The three rates are empirical averages over token-level Bernoulli indicators.
+They are therefore in $[0,1]$ and measure distinct failure modes: parser
+recovery or lexical fallback, vocabulary mismatch, and disagreement with a
+complete-file parse after the file is known.  A model trained on complete-file
+or low-fallback AST ids receives a shifted side input when these rates grow.
+The proposition is a measurement contract rather than a performance guarantee:
+it identifies when inference-time AST conditioning has drifted from the training
+artifact.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:cvd}]
+The implementation samples $\xi$ and evaluates the loss for that sampled masked
+graph.  The stochastic gradient is therefore the gradient of one draw from the
+inner expectation.  Under the usual interchange conditions used for stochastic
+gradient training, its expectation equals
+$\nabla_\theta \mathcal{L}_{\mathrm{cvd}}(\theta)$.  The second statement is the
+complement of never sampling the block in $T$ independent Bernoulli trials.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:cvd-gradient}]
+The vector $v_{\mathrm{cvd}}$ is used only when some Bernoulli mask is one.  The
+probability that all $D$ masks are zero is $(1-p_{\mathrm{cvd}})^D$, and the
+same complement argument over $DT$ independent trials gives the multi-pass
+statement.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:cvd-bound}]
+The unmasked head output is $o_q=\sum_m a_{qm}V_m$ and the masked output is
+$\tilde o_q=\sum_{m\notin\mathcal{S}}a_{qm}V_m+
+\sum_{m\in\mathcal{S}}a_{qm}v_{\mathrm{cvd}}$.  Their difference is
+$\tilde o_q-o_q=\sum_{m\in\mathcal{S}}a_{qm}(v_{\mathrm{cvd}}-V_m)$.  By the
+triangle inequality and the norm bounds,
+$\|\tilde o_q-o_q\|_2\le\sum_{m\in\mathcal{S}}a_{qm}
+(\|v_{\mathrm{cvd}}\|_2+\|V_m\|_2)\le 2R\sum_{m\in\mathcal{S}}a_{qm}$.
+\end{proof}
 
 \section{Reproducibility Notes}
 
