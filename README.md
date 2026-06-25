@@ -1,5 +1,7 @@
 # CSMT-GNN Research Workspace
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20840625.svg)](https://doi.org/10.5281/zenodo.20840625)
+
 I started CSMT-GNN from a stubborn question: if code is full of explicit
 structure, why should a code model have to rediscover all of that structure from
 raw tokens at every layer?
