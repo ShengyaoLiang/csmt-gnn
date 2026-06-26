@@ -90,7 +90,7 @@ EXCLUDE_NAME_MARKERS = {
 }
 
 RENAMED_RELEASE_FILES = [
-    ("paper/main.pdf", "CSMT-GNN_arXiv_preprint_v0.1.1.pdf"),
+    ("paper/main.pdf", "CSMT-GNN_arXiv_preprint_v0.1.2.pdf"),
 ]
 
 

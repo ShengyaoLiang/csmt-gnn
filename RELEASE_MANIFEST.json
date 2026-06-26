@@ -1,13 +1,13 @@
 {
   "package": "csmt-gnn-github-release",
-  "built_at_utc": "2026-06-26T10:15:17.979604+00:00",
+  "built_at_utc": "2026-06-26T10:56:44.441225+00:00",
   "purpose": "public release package accompanying the arXiv preprint",
   "target": "arXiv public preprint",
   "files": [
     ".zenodo.json",
     "00_START_HERE.md",
     "CITATION.cff",
-    "CSMT-GNN_arXiv_preprint_v0.1.1.pdf",
+    "CSMT-GNN_arXiv_preprint_v0.1.2.pdf",
     "ENGINEERING_NOTES.md",
     "LICENSE",
     "README.md",
