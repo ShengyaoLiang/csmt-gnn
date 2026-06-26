@@ -54,6 +54,7 @@ RESULT_FILES = [
     "results/diagnostic_poc_transformer_seed1.json",
     "results/diagnostic_poc_transformer_seed2.json",
     "results/diagnostic_poc_transformer_seed3.json",
+    "results/diagnostic_poc_quick_arch_update.json",
     "results/prefix_ast_degradation_lowcompute.json",
     "results/block_sweep_b4.json",
     "results/block_sweep_b8.json",
@@ -87,6 +88,10 @@ EXCLUDE_NAME_MARKERS = {
     "template",
     "style",
 }
+
+RENAMED_RELEASE_FILES = [
+    ("paper/main.pdf", "CSMT-GNN_arXiv_preprint_v0.1.1.pdf"),
+]
 
 
 def should_copy(path: Path) -> bool:
@@ -166,6 +171,12 @@ def build(output_dir: Path, zip_path: Path) -> None:
         src = ROOT / rel
         if src.exists():
             copied.extend(copy_tree(src, output_dir / rel, output_dir))
+
+    for src_rel, dst_rel in RENAMED_RELEASE_FILES:
+        src = ROOT / src_rel
+        if src.exists():
+            copy_file(src, output_dir / dst_rel)
+            copied.append(dst_rel)
 
     manifest = {
         "package": "csmt-gnn-github-release",

@@ -219,6 +219,16 @@ class CSMTShapeTests(unittest.TestCase):
         self.assertIsNotNone(sampled)
         self.assertTrue(torch.equal(sampled, valid))
 
+    def test_block_graph_masks_padding_blocks(self) -> None:
+        config = self.tiny_config()
+        graph = PrefixBlockGraph(config)
+        graph.eval()
+        z = torch.randn(1, 3, config.hidden_size)
+        valid = torch.tensor([[True, True, False]])
+        with torch.no_grad():
+            out, _ = graph(z, var_def_mask=None, valid_block_mask=valid)
+        self.assertTrue(torch.allclose(out[:, 2], torch.zeros_like(out[:, 2]), atol=1e-6))
+
     def test_variable_cvd_ignores_padding_blocks(self) -> None:
         config = CSMTConfig(**{**self.tiny_config().__dict__, "cvd_prob": 1.0, "cvd_audit": True})
         graph = PrefixBlockGraph(config)

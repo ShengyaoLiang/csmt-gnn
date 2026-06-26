@@ -328,6 +328,10 @@ $n>m$:
 \[
   s_{1:M}=\mathrm{PrefixGraphAttn}(z_{1:M}).
 \]
+In batched training, this prefix mask is combined with a valid-block key mask,
+and padded block outputs are zeroed after graph attention.  I include this
+detail because padding should be outside the block graph, not merely harmless
+because later token states are masked.
 
 CVD changes only the value messages.  During training, each variable-definition
 block is sampled with probability $p_{\mathrm{cvd}}$.  The current
@@ -396,7 +400,10 @@ My cleaned implementation is organized around small, auditable entry points:
   \texttt{train.py} supports single-process and \texttt{torchrun} training over
   paired token and AST NumPy files.  Input id range scans are enabled by
   default for fail-fast debugging, but can be disabled after the NumPy pipeline
-  is validated; dtype, shape, and length checks remain active.
+  is validated; dtype, shape, and length checks remain active.  The trainer also
+  trims AST ids and definition masks to the next-token model-input prefix before
+  each forward pass, so complete-sample side inputs are not handed to a shorter
+  prediction prefix.
   \item \texttt{scripts/validate\_data\_pipeline.py} is the NumPy preflight
   check for that validated-pipeline fast path: it scans token ids, AST ids,
   block shapes, masks, and usable lengths before training.
@@ -466,6 +473,8 @@ had to be deleted.
     Fused softmax & Hard-coded four chunks of 16 & Reference path uses dynamic block shape \\
     CVD sampling & Forced one mask per eligible sample & Bernoulli sampling with true zero-mask cases \\
     CVD auditing & Per-step count sync in training path & Audit counts are opt-in; default sampling is synchronization-free \\
+    Padding in graph path & Padded blocks could remain graph nodes & Valid-block attention mask and zeroed padded block outputs \\
+    Trainer side inputs & Full-sample AST features during next-token prediction & Prefix-trimmed AST ids and masks before forward pass \\
     Inference AST & Assumed complete-file parse & Prefix parser with lexical fallback \\
     Block boundaries & Hard cuts through syntax & Initially-zero causal boundary mixing before pooling \\
     MoE fallback & Token-wise dynamic dispatch & Sorted top-$k$ contiguous expert batches \\
@@ -496,11 +505,12 @@ stay focused on what each statement means for the architecture.
 
 \begin{proposition}[Prefix visibility]
 \label{prop:prefix}
-Assume each block-local attention operator uses a causal mask and the block
-graph attends only from block $m$ to blocks $n\le m$.  If the AST ids for token
-$t$ are computed from a source prefix ending no later than $t$, then the hidden
-state used to predict token $t+1$ is a function only of tokens and AST spans in
-the prefix $x_{1:t}$.
+Assume each block-local attention operator uses a causal mask, the block graph
+attends only from block $m$ to valid blocks $n\le m$, and padded block outputs
+are not injected into real token states.  If the AST ids for token $t$ are
+computed from a source prefix ending no later than $t$, then the hidden state
+used to predict token $t+1$ is a function only of tokens and AST spans in the
+prefix $x_{1:t}$.
 \end{proposition}
 
 
@@ -897,9 +907,10 @@ diagnostic harness whose assumptions are visible enough to inspect and challenge
 \begin{proof}[Proof of Proposition~\ref{prop:prefix}]
 Inside a block, causal self-attention prevents position $b$ from reading
 positions greater than $b$.  The block graph receives pooled summaries from
-blocks with index at most the current block; with the injection shift used in
-Section 3.5, block $m$ receives only graph state from blocks $<m$.  Therefore no
-later block can affect the current token state.  The remaining possible leakage
+valid blocks with index at most the current block; with the injection shift used
+in Section 3.5, block $m$ receives only graph state from valid blocks $<m$.
+Padded block outputs are zeroed and are not injected into real token states.
+Therefore no later block can affect the current token state.  The remaining possible leakage
 source is preprocessing: if AST ids are built from the complete file, a token can
 receive node information created by later syntax.  The per-token prefix mode
 removes that source by construction, because the parser input ends at the token
@@ -1116,12 +1127,13 @@ On my local laptop, I ran this diagnostic at
 \texttt{hidden\_size=16}, \texttt{max\_tokens=64}, and 12 steps per variant,
 plus small block-size and seed smoke sweeps.  The diagnostic now includes a pure
 token-only Transformer and a rough parameter-neighbor Transformer control.  The
-unit tests passed at 37/37 after adding fail-fast checks for the Transformer
+unit tests now pass at 39/39 after adding fail-fast checks for the Transformer
 controls, incremental AST configuration checks, opt-in CVD audit coverage,
-validated-pipeline input range controls, and a regression test for token-level
-CVD masks on short next-token inputs.  The data-pipeline preflight also
-passed on the tiny diagnostic arrays, checking token ids, AST ids, block shapes,
-masks, and usable sequence lengths.
+validated-pipeline input range controls, graph padding-mask coverage, trainer
+prefix-trim coverage, and a regression test for token-level CVD masks on short
+next-token inputs.  The data-pipeline preflight also passed on the tiny
+diagnostic arrays, checking token ids, AST ids, block shapes, masks, and usable
+sequence lengths.
 The structural probe found cross-block definition-use pairs in all three
 diagnostic cases.  The CVD audit recorded 72 variable-eligible blocks and 112
 random-control eligible blocks over 24 audited steps, with both sampling rates

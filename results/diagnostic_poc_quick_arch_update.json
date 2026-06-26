@@ -1,0 +1,138 @@
+{
+  "purpose": "tiny plumbing and falsification sanity check; not a benchmark",
+  "seed": 7,
+  "num_cases": 3,
+  "vocab_size": 45,
+  "num_ast_types": 24,
+  "variants": [
+    {
+      "variant": "transformer_baseline",
+      "losses": [
+        3.876389503479004,
+        4.118861675262451,
+        3.809990167617798,
+        3.762838125228882
+      ],
+      "final_loss": 3.762838125228882,
+      "loss_delta": -0.11355137825012207,
+      "parameter_count": 4688,
+      "trainable_parameter_count": 4688,
+      "config": {
+        "vocab_size": 45,
+        "num_layers": 1,
+        "hidden_size": 16,
+        "max_tokens": 64,
+        "num_heads": 4,
+        "ffn_multiplier": 1.5,
+        "dropout": 0.0,
+        "validate_input_ranges": true,
+        "tie_embeddings": false
+      },
+      "eval_metrics": {
+        "eval_loss": 3.8387014071146646,
+        "definition_use_loss": 3.8359386920928955,
+        "cross_block_use_loss": 3.8564134438832602,
+        "definition_use_targets": 11.0,
+        "cross_block_use_targets": 8.0
+      }
+    },
+    {
+      "variant": "ast_graph",
+      "losses": [
+        3.795670747756958,
+        3.9294962882995605,
+        4.182792663574219,
+        3.677971839904785
+      ],
+      "final_loss": 3.677971839904785,
+      "loss_delta": -0.11769890785217285,
+      "parameter_count": 6960,
+      "trainable_parameter_count": 6960,
+      "config": {
+        "vocab_size": 45,
+        "num_layers": 1,
+        "hidden_size": 16,
+        "block_size": 8,
+        "max_tokens": 64,
+        "num_heads": 4,
+        "num_graph_heads": 4,
+        "num_experts": 1,
+        "moe_top_k": 1,
+        "ffn_multiplier": 1.5,
+        "kv_compression": 0.5,
+        "num_ast_types": 24,
+        "ast_dim": 8,
+        "ast_gate_scale": 0.1,
+        "boundary_mix": 0.1,
+        "boundary_width": 1,
+        "cvd_prob": 0.0,
+        "cvd_scope": "variable",
+        "cvd_audit": false,
+        "dropout": 0.0,
+        "validate_input_ranges": true,
+        "tie_embeddings": false,
+        "use_ast_gate": true,
+        "use_block_graph": true,
+        "use_cvd": false,
+        "use_moe": false,
+        "use_boundary": true
+      },
+      "eval_metrics": {
+        "eval_loss": 3.8681676387786865,
+        "definition_use_loss": 3.6473655700683594,
+        "cross_block_use_loss": 3.695182959238688,
+        "definition_use_targets": 11.0,
+        "cross_block_use_targets": 8.0
+      }
+    },
+    {
+      "variant": "variable_cvd",
+      "losses": [
+        3.7812516689300537,
+        3.930251121520996,
+        3.8631083965301514,
+        3.6636786460876465
+      ],
+      "final_loss": 3.6636786460876465,
+      "loss_delta": -0.11757302284240723,
+      "parameter_count": 6976,
+      "trainable_parameter_count": 6976,
+      "config": {
+        "vocab_size": 45,
+        "num_layers": 1,
+        "hidden_size": 16,
+        "block_size": 8,
+        "max_tokens": 64,
+        "num_heads": 4,
+        "num_graph_heads": 4,
+        "num_experts": 1,
+        "moe_top_k": 1,
+        "ffn_multiplier": 1.5,
+        "kv_compression": 0.5,
+        "num_ast_types": 24,
+        "ast_dim": 8,
+        "ast_gate_scale": 0.1,
+        "boundary_mix": 0.1,
+        "boundary_width": 1,
+        "cvd_prob": 0.2,
+        "cvd_scope": "variable",
+        "cvd_audit": false,
+        "dropout": 0.0,
+        "validate_input_ranges": true,
+        "tie_embeddings": false,
+        "use_ast_gate": true,
+        "use_block_graph": true,
+        "use_cvd": true,
+        "use_moe": false,
+        "use_boundary": true
+      },
+      "eval_metrics": {
+        "eval_loss": 3.7588442166646323,
+        "definition_use_loss": 3.9619890054066977,
+        "cross_block_use_loss": 4.042801141738892,
+        "definition_use_targets": 11.0,
+        "cross_block_use_targets": 8.0
+      }
+    }
+  ]
+}

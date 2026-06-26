@@ -98,6 +98,35 @@ def collate_batch(batch):
     return tokens_out, lengths, ast_ids_out, ast_mask_out
 
 
+def trim_features_for_next_token(
+    ast_ids: torch.Tensor,
+    ast_mask: torch.Tensor,
+    input_length: int,
+    block_size: int,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Trim AST side inputs to the model-input prefix used for next-token loss."""
+
+    if input_length <= 0:
+        raise ValueError("input_length must be positive.")
+    if ast_ids.dim() != 3:
+        raise ValueError(f"ast_ids must be shaped [batch, blocks, block_size], got {tuple(ast_ids.shape)}.")
+    if ast_ids.size(2) != block_size:
+        raise ValueError(f"ast_ids last dimension must equal block_size={block_size}, got {ast_ids.size(2)}.")
+    if ast_mask.dim() != 2:
+        raise ValueError(f"ast_mask must be shaped [batch, width], got {tuple(ast_mask.shape)}.")
+    if ast_mask.size(0) != ast_ids.size(0):
+        raise ValueError(f"ast_mask batch dimension must match ast_ids batch dimension {ast_ids.size(0)}, got {ast_mask.size(0)}.")
+
+    required_blocks = (input_length + block_size - 1) // block_size
+    original_blocks = ast_ids.size(1)
+    ast_ids = ast_ids[:, :required_blocks]
+    if ast_mask.size(1) > original_blocks:
+        ast_mask = ast_mask[:, :input_length]
+    else:
+        ast_mask = ast_mask[:, :required_blocks]
+    return ast_ids, ast_mask
+
+
 def setup_distributed() -> Tuple[bool, int, int, torch.device]:
     if "RANK" not in os.environ:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -281,10 +310,16 @@ def train(args) -> None:
                 with torch.amp.autocast("cuda", enabled=use_cuda_amp, dtype=autocast_dtype):
                     model_input = tokens[:, :-1]
                     labels = tokens[:, 1:]
+                    model_ast_ids, model_ast_mask = trim_features_for_next_token(
+                        ast_ids,
+                        ast_mask,
+                        model_input.size(1),
+                        config.block_size,
+                    )
                     logits = model(
                         model_input,
-                        ast_type_ids=ast_ids,
-                        var_def_mask=ast_mask,
+                        ast_type_ids=model_ast_ids,
+                        var_def_mask=model_ast_mask,
                         lengths=(lengths - 1).clamp_min(0),
                     )
                     target_len = logits.size(1)

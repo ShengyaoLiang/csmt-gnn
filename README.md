@@ -44,6 +44,11 @@ contains:
 - structural probe coverage for definition-use and cross-block relations;
 - a CVD mask audit that separates definition-targeted sampling from random
   valid-block sampling;
+- explicit valid-block masking in the prefix graph path, so padding blocks are
+  excluded from block-level attention in mixed-length batches;
+- explicit next-token feature trimming in the trainer, so AST ids and
+  definition masks are aligned to the model-input prefix before each forward
+  pass;
 - a prefix/full AST degradation diagnostic for `fallback_rate`, `unknown_rate`,
   `prefix_full_divergence`, and parser latency;
 - a tiny ablation-oriented diagnostic training script that can run when PyTorch is available;

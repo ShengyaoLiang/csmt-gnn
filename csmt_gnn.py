@@ -375,6 +375,12 @@ class PrefixBlockGraph(nn.Module):
         valid_block_mask: Optional[torch.Tensor],
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
         n, m, d = z.shape
+        valid = None
+        if valid_block_mask is not None:
+            valid = valid_block_mask.to(device=z.device, dtype=torch.bool)
+            if valid.shape != (n, m):
+                raise ValueError(f"valid_block_mask shape {tuple(valid.shape)} must match block state shape {(n, m)}.")
+
         cvd_mask = self._sample_cvd_mask(var_def_mask, valid_block_mask)
         q = self.q_proj(z).view(n, m, self.num_heads, self.head_dim).transpose(1, 2)
         k = self.k_proj(z).view(n, m, self.num_heads, self.head_dim).transpose(1, 2)
@@ -385,9 +391,19 @@ class PrefixBlockGraph(nn.Module):
             replacement = self.cvd_replacement.view(1, self.num_heads, self.head_dim).to(dtype=v.dtype)
             v = torch.where(cvd_mask.view(n, m, 1, 1), replacement, v)
         v = v.transpose(1, 2)
-        y = F.scaled_dot_product_attention(q, k, v, is_causal=True)
+        if valid is None:
+            y = F.scaled_dot_product_attention(q, k, v, is_causal=True)
+        else:
+            causal = torch.ones(m, m, device=z.device, dtype=torch.bool).tril()
+            key_valid = valid.view(n, 1, 1, m)
+            attn_mask = causal.view(1, 1, m, m) & key_valid
+            y = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, is_causal=False)
+            y = y.masked_fill(~valid.view(n, 1, m, 1), 0)
         y = y.transpose(1, 2).contiguous().view(n, m, d)
-        return self.out_proj(y) + z, cvd_mask
+        out = self.out_proj(y) + z
+        if valid is not None:
+            out = out.masked_fill(~valid.unsqueeze(-1), 0)
+        return out, cvd_mask
 
 
 class GatedGraphInjection(nn.Module):

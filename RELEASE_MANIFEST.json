@@ -1,12 +1,13 @@
 {
   "package": "csmt-gnn-github-release",
-  "built_at_utc": "2026-06-25T10:16:31.122125+00:00",
+  "built_at_utc": "2026-06-26T10:15:17.979604+00:00",
   "purpose": "public release package accompanying the arXiv preprint",
   "target": "arXiv public preprint",
   "files": [
     ".zenodo.json",
     "00_START_HERE.md",
     "CITATION.cff",
+    "CSMT-GNN_arXiv_preprint_v0.1.1.pdf",
     "ENGINEERING_NOTES.md",
     "LICENSE",
     "README.md",
@@ -30,6 +31,7 @@
     "results/cvd_mask_audit.json",
     "results/data_pipeline_validation.json",
     "results/diagnostic_poc_lowcompute.json",
+    "results/diagnostic_poc_quick_arch_update.json",
     "results/diagnostic_poc_transformer.json",
     "results/diagnostic_poc_transformer_b16.json",
     "results/diagnostic_poc_transformer_b4.json",

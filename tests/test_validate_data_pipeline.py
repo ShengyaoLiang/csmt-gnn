@@ -8,6 +8,12 @@ from pathlib import Path
 import numpy as np
 
 from scripts.validate_data_pipeline import run
+from train import trim_features_for_next_token
+
+try:
+    import torch
+except ImportError:  # pragma: no cover
+    torch = None
 
 
 def make_args(root: Path, **overrides):
@@ -84,6 +90,23 @@ class ValidateDataPipelineTests(unittest.TestCase):
             issues = " ".join(result["reports"][0]["issues"])
             self.assertIn("second dimension must equal block_size", issues)
             self.assertIn("ast_mask must be one-dimensional", issues)
+
+    @unittest.skipIf(torch is None, "PyTorch is not installed in this Python environment.")
+    def test_trim_features_for_next_token(self) -> None:
+        ast_ids = torch.zeros(2, 4, 8, dtype=torch.long)
+        token_mask = torch.zeros(2, 19, dtype=torch.bool)
+        block_mask = torch.zeros(2, 4, dtype=torch.bool)
+
+        trimmed_ids, trimmed_mask = trim_features_for_next_token(ast_ids, token_mask, 13, 8)
+        self.assertEqual(tuple(trimmed_ids.shape), (2, 2, 8))
+        self.assertEqual(tuple(trimmed_mask.shape), (2, 13))
+
+        trimmed_ids, trimmed_mask = trim_features_for_next_token(ast_ids, block_mask, 13, 8)
+        self.assertEqual(tuple(trimmed_ids.shape), (2, 2, 8))
+        self.assertEqual(tuple(trimmed_mask.shape), (2, 2))
+
+        with self.assertRaisesRegex(ValueError, "batch dimension"):
+            trim_features_for_next_token(ast_ids, torch.zeros(1, 4, dtype=torch.bool), 13, 8)
 
 
 if __name__ == "__main__":

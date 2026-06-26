@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "csmt-gnn"
-version = "0.1.0"
+version = "0.1.1"
 description = "Structure-aware code language model prototype with AST features, prefix block graph attention, and CVD."
 readme = "README.md"
 requires-python = ">=3.10"

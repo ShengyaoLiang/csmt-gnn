@@ -53,15 +53,17 @@
     "transformer_input_contracts": "token-only Transformer controls share fail-fast token-id and integer-length validation with the CSMT model",
     "incremental_ast_contracts": "IncrementalASTConfig validates block_size and max_tokens and the CLI no longer relies on assert statements",
     "cvd_audit_contracts": "CVD sampling counters are opt-in through cvd_audit; default training samples masks without per-step count synchronization",
-    "cvd_token_mask_contract": "token-level CVD masks are reduced using the current forward-pass block count, preventing short next-token inputs from being misread as block-level masks"
+    "cvd_token_mask_contract": "token-level CVD masks are reduced using the current forward-pass block count, preventing short next-token inputs from being misread as block-level masks",
+    "graph_valid_block_mask": "prefix block graph attention combines causal visibility with valid-block key masking and zeroes padded block outputs",
+    "trainer_prefix_feature_trim": "train.py trims AST ids and definition masks to the next-token model-input prefix before each forward pass"
   },
   "verification_status": {
     "system_python": "Python 3.10.11 lacks NumPy and PyTorch in this workspace",
     "bundled_python": "Python 3.12.13 has NumPy and PDF packages, but lacks torch/tree_sitter/tree_sitter_python",
     "torch_forward_backward": "passed through scripts/diagnostic_poc_train.py tiny CPU run; 10 variants completed 12 steps each, including transformer_baseline and transformer_matched",
     "diagnostic_poc_train": "passed locally on CPU with independent Transformer controls; results/diagnostic_poc_transformer.json and results/lowcompute_validation_summary.md written; not a benchmark",
-    "python_syntax": "passed with .venv-lowcompute Python 3.10.11 on 2026-06-25 after token-level CVD mask fix",
-    "unit_tests": "37/37 passed with PyTorch CPU in .venv-lowcompute on 2026-06-25 after token-level CVD mask regression coverage",
+    "python_syntax": "passed on 2026-06-26 after graph padding-mask and trainer prefix-trim updates",
+    "unit_tests": "39/39 passed with PyTorch CPU in .venv-lowcompute on 2026-06-26 after graph padding-mask and trainer prefix-trim regression coverage",
     "data_pipeline_preflight": "passed on 3 tiny diagnostic samples; results/data_pipeline_validation.json written",
     "diagnostics_smoke": "passed; generated shadowing, long_range_import, and guarded_attribute arrays with refined Python-binding definition masks",
     "prefix_ast_smoke": "passed with tree-sitter in .venv-lowcompute; inference_ast.py avg_ms=1.555 over repeat=32 on prefix_probe.py",
@@ -79,7 +81,8 @@
     "structural_probe_eval": "passed; results/structural_probe_eval.json records definition-use and cross-block coverage; not model accuracy",
     "cvd_mask_audit": "passed; variable scope sampled only definition-eligible blocks while random scope sampled all valid blocks; not model quality evidence",
     "transformer_comparison": "passed as a smoke test; transformer_matched is a rough parameter-neighbor control, and results do not establish that CSMT-GNN beats Transformer",
-    "architecture_cost_table": "passed; results/architecture_cost_table.json records dense causal edge counts vs block-local plus block-graph edge counts; not a runtime benchmark"
+    "architecture_cost_table": "passed; results/architecture_cost_table.json records dense causal edge counts vs block-local plus block-graph edge counts; not a runtime benchmark",
+    "quick_arch_update_diagnostic": "passed locally on CPU with transformer_baseline, ast_graph, and variable_cvd for 4 steps; results/diagnostic_poc_quick_arch_update.json written; not a benchmark"
   },
   "reproducibility_links": {
     "public_repository": "https://github.com/ShengyaoLiang/csmt-gnn",
