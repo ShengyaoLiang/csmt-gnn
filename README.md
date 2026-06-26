@@ -206,6 +206,10 @@ The default diagnostic script trains:
 `transformer_baseline`, `transformer_matched`, `token_baseline`,
 `boundary_only`, `ast_only`, `graph_only`, `ast_graph`,
 `random_dropout_control`, `variable_cvd`, and `full_moe`.
+For every CSMT variant, the script trims AST ids and definition masks to the
+same prefix used by the next-token input. Its JSON output includes
+`prefix_feature_audit`, which records the number of checked cases, token-level
+mask cases, maximum prefix widths, and any prefix-alignment violations.
 
 This repository now includes one local diagnostic run:
 

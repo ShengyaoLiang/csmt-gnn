@@ -90,3 +90,8 @@ When PyTorch is available:
 python scripts\cvd_mask_audit.py --steps 24 --hidden-size 16 --ast-dim 8 --block-size 8 --max-tokens 64
 python scripts\diagnostic_poc_train.py --steps 12 --output results\diagnostic_poc_transformer.json
 ```
+
+The diagnostic JSON should include `prefix_feature_audit.all_prefix_aligned =
+1.0` with an empty `violations` list. This checks the diagnostic path itself:
+CSMT variants receive AST ids and definition masks clipped to the same prefix as
+the next-token input.

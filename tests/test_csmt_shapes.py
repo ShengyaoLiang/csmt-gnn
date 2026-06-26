@@ -229,6 +229,17 @@ class CSMTShapeTests(unittest.TestCase):
             out, _ = graph(z, var_def_mask=None, valid_block_mask=valid)
         self.assertTrue(torch.allclose(out[:, 2], torch.zeros_like(out[:, 2]), atol=1e-6))
 
+    def test_block_graph_full_valid_mask_matches_unmasked_causal_path(self) -> None:
+        config = self.tiny_config()
+        graph = PrefixBlockGraph(config)
+        graph.eval()
+        z = torch.randn(2, 3, config.hidden_size)
+        valid = torch.ones(2, 3, dtype=torch.bool)
+        with torch.no_grad():
+            unmasked, _ = graph(z, var_def_mask=None, valid_block_mask=None)
+            masked, _ = graph(z, var_def_mask=None, valid_block_mask=valid)
+        self.assertTrue(torch.allclose(unmasked, masked, atol=1e-6))
+
     def test_variable_cvd_ignores_padding_blocks(self) -> None:
         config = CSMTConfig(**{**self.tiny_config().__dict__, "cvd_prob": 1.0, "cvd_audit": True})
         graph = PrefixBlockGraph(config)
@@ -252,6 +263,33 @@ class CSMTShapeTests(unittest.TestCase):
         audit = model.cvd_audit_summary()
         self.assertEqual(audit["eligible_blocks"], 1.0)
         self.assertEqual(audit["sampled_blocks"], 1.0)
+
+    def test_diagnostic_prefix_trimming_removes_future_token_masks(self) -> None:
+        from scripts.diagnostic_poc_train import audit_prefix_feature_trimming, trim_batch_to_prefix
+
+        batch = {
+            "tokens": torch.tensor([1, 2, 3, 4, 5, 6]),
+            "ast_ids": torch.zeros(2, 4, dtype=torch.long),
+            "ast_mask": torch.tensor([False, False, False, False, False, True]),
+        }
+        trimmed = trim_batch_to_prefix(batch, input_length=5, block_size=4)
+        self.assertEqual(tuple(trimmed["ast_ids"].shape), (2, 4))
+        self.assertEqual(trimmed["ast_mask"].numel(), 5)
+        self.assertFalse(bool(trimmed["ast_mask"].any()))
+
+        class StubArrays:
+            prefixes = ["case"]
+
+            @staticmethod
+            def load(prefix):
+                self.assertEqual(prefix, "case")
+                return batch
+
+        audit = audit_prefix_feature_trimming(StubArrays(), block_size=4)
+        self.assertEqual(audit["cases"], 1)
+        self.assertEqual(audit["token_level_masks"], 1)
+        self.assertEqual(audit["all_prefix_aligned"], 1.0)
+        self.assertEqual(audit["violations"], [])
 
     def test_cvd_audit_is_opt_in(self) -> None:
         config = CSMTConfig(**{**self.tiny_config().__dict__, "cvd_prob": 1.0})

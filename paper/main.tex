@@ -19,6 +19,7 @@
 \usepackage{array}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
+\hypersetup{hidelinks}
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{corollary}{Corollary}
@@ -408,7 +409,9 @@ My cleaned implementation is organized around small, auditable entry points:
   check for that validated-pipeline fast path: it scans token ids, AST ids,
   block shapes, masks, and usable lengths before training.
   \item \texttt{scripts/diagnostic\_poc\_train.py} trains an ablation matrix on
-  the diagnostic cases when PyTorch is available.
+  the diagnostic cases when PyTorch is available.  It now trims AST ids and
+  definition masks to the same next-token prefix before each CSMT forward pass
+  and records a \texttt{prefix\_feature\_audit} field in its JSON output.
 \end{itemize}
 I treat the diagnostic output as a plumbing and falsification check, not as a
 benchmark.
@@ -1130,8 +1133,11 @@ token-only Transformer and a rough parameter-neighbor Transformer control.  The
 unit tests now pass at 39/39 after adding fail-fast checks for the Transformer
 controls, incremental AST configuration checks, opt-in CVD audit coverage,
 validated-pipeline input range controls, graph padding-mask coverage, trainer
-prefix-trim coverage, and a regression test for token-level CVD masks on short
-next-token inputs.  The data-pipeline preflight also passed on the tiny
+prefix-trim coverage, diagnostic prefix-audit coverage, and a regression test
+for token-level CVD masks on short next-token inputs.  A two-step diagnostic
+run also recorded \texttt{prefix\_feature\_audit.all\_prefix\_aligned=1.0} with
+an empty violation list, confirming that the diagnostic CSMT variants receive
+prefix-clipped AST ids and definition masks.  The data-pipeline preflight also passed on the tiny
 diagnostic arrays, checking token ids, AST ids, block shapes, masks, and usable
 sequence lengths.
 The structural probe found cross-block definition-use pairs in all three

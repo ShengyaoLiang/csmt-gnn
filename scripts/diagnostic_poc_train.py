@@ -45,6 +45,7 @@ except ImportError as exc:  # pragma: no cover - this path is for user machines 
     raise SystemExit("PyTorch is required for diagnostic_poc_train.py. Install torch first.") from exc
 
 from csmt_gnn import CSMTConfig, CSMTModel
+from train import trim_features_for_next_token
 from transformer_baseline import TinyCausalTransformer, TransformerBaselineConfig
 
 
@@ -201,10 +202,80 @@ def build_model(args, variant: str, vocab_size: int, num_ast_types: int):
     return CSMTModel(config), config
 
 
+def trim_batch_to_prefix(batch: Dict[str, torch.Tensor], input_length: int, block_size: int) -> Dict[str, torch.Tensor]:
+    """Return a batch copy whose structural side inputs end at the model prefix."""
+
+    ast_ids = batch["ast_ids"]
+    ast_mask = batch["ast_mask"]
+    ast_was_unbatched = ast_ids.dim() == 2
+    mask_was_unbatched = ast_mask.dim() == 1
+    if ast_was_unbatched:
+        ast_ids = ast_ids.unsqueeze(0)
+    if mask_was_unbatched:
+        ast_mask = ast_mask.unsqueeze(0)
+    ast_ids, ast_mask = trim_features_for_next_token(ast_ids, ast_mask, input_length, block_size)
+    trimmed = dict(batch)
+    trimmed["ast_ids"] = ast_ids.squeeze(0) if ast_was_unbatched else ast_ids
+    trimmed["ast_mask"] = ast_mask.squeeze(0) if mask_was_unbatched else ast_mask
+    return trimmed
+
+
+def audit_prefix_feature_trimming(arrays: DiagnosticArrays, block_size: int) -> Dict[str, object]:
+    """Summarize whether diagnostic AST side inputs are prefix-aligned."""
+
+    violations: List[Dict[str, object]] = []
+    cases = 0
+    token_level_masks = 0
+    max_input_length = 0
+    max_ast_blocks = 0
+    max_mask_width = 0
+    for prefix in arrays.prefixes:
+        batch = arrays.load(prefix)
+        tokens = batch["tokens"]
+        if tokens.numel() < 2:
+            continue
+        cases += 1
+        input_length = int(tokens.numel() - 1)
+        required_blocks = (input_length + block_size - 1) // block_size
+        original_blocks = int(batch["ast_ids"].size(0))
+        full_mask_width = int(batch["ast_mask"].numel())
+        mask_is_token_level = full_mask_width > original_blocks
+        if mask_is_token_level:
+            token_level_masks += 1
+        expected_mask_width = input_length if mask_is_token_level else required_blocks
+        trimmed = trim_batch_to_prefix(batch, input_length, block_size)
+        ast_blocks = int(trimmed["ast_ids"].size(0))
+        mask_width = int(trimmed["ast_mask"].numel())
+        max_input_length = max(max_input_length, input_length)
+        max_ast_blocks = max(max_ast_blocks, ast_blocks)
+        max_mask_width = max(max_mask_width, mask_width)
+        if ast_blocks != required_blocks or mask_width != expected_mask_width:
+            violations.append(
+                {
+                    "prefix": prefix,
+                    "input_length": input_length,
+                    "required_blocks": required_blocks,
+                    "ast_blocks": ast_blocks,
+                    "mask_width": mask_width,
+                    "expected_mask_width": expected_mask_width,
+                }
+            )
+    return {
+        "cases": cases,
+        "token_level_masks": token_level_masks,
+        "max_input_length": max_input_length,
+        "max_ast_blocks": max_ast_blocks,
+        "max_mask_width": max_mask_width,
+        "all_prefix_aligned": float(len(violations) == 0),
+        "violations": violations,
+    }
+
+
 def forward_variant(model, variant: str, batch: Dict[str, torch.Tensor], input_ids: torch.Tensor) -> torch.Tensor:
     lengths = torch.tensor([input_ids.numel()], dtype=torch.long)
     if is_transformer_variant(variant):
         return model(input_ids, lengths=lengths)
+    batch = trim_batch_to_prefix(batch, input_ids.numel(), model.config.block_size)
     return model(
         input_ids,
         ast_type_ids=batch["ast_ids"],
@@ -359,6 +430,7 @@ def main() -> None:
         "num_cases": len(arrays.prefixes),
         "vocab_size": vocab_size,
         "num_ast_types": num_ast_types,
+        "prefix_feature_audit": audit_prefix_feature_trimming(arrays, args.block_size),
         "variants": [asdict(train_variant(args, arrays, variant, vocab_size, num_ast_types)) for variant in variants],
     }
     args.output.write_text(json.dumps(results, indent=2), encoding="utf-8")

@@ -99,6 +99,9 @@ rewrite.
 - `scripts/diagnostic_poc_train.py` provides a local falsification sanity
   check with independent Transformer controls, token, AST, graph,
   random-dropout, variable-CVD, and MoE variants when PyTorch is available.
+- The diagnostic trainer now applies the same next-token prefix trimming to AST
+  ids and definition masks that `train.py` uses, and records a
+  `prefix_feature_audit` block in the JSON output.
 - `transformer_baseline.py` is a separate token-only causal Transformer, so the
   Transformer control is not just a CSMT configuration with features disabled.
 - The diagnostic script includes `transformer_matched`, a rough

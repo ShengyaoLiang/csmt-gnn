@@ -4,24 +4,33 @@
   "num_cases": 3,
   "vocab_size": 45,
   "num_ast_types": 24,
+  "prefix_feature_audit": {
+    "cases": 3,
+    "token_level_masks": 3,
+    "max_input_length": 33,
+    "max_ast_blocks": 5,
+    "max_mask_width": 33,
+    "all_prefix_aligned": 1.0,
+    "violations": []
+  },
   "variants": [
     {
       "variant": "transformer_baseline",
       "losses": [
-        3.876389503479004,
-        4.118861675262451,
-        3.809990167617798,
-        3.762838125228882
+        4.13884162902832,
+        3.909183979034424,
+        3.901972532272339,
+        4.0230488777160645
       ],
-      "final_loss": 3.762838125228882,
-      "loss_delta": -0.11355137825012207,
-      "parameter_count": 4688,
-      "trainable_parameter_count": 4688,
+      "final_loss": 4.0230488777160645,
+      "loss_delta": -0.11579275131225586,
+      "parameter_count": 5200,
+      "trainable_parameter_count": 5200,
       "config": {
         "vocab_size": 45,
         "num_layers": 1,
         "hidden_size": 16,
-        "max_tokens": 64,
+        "max_tokens": 96,
         "num_heads": 4,
         "ffn_multiplier": 1.5,
         "dropout": 0.0,
@@ -29,9 +38,9 @@
         "tie_embeddings": false
       },
       "eval_metrics": {
-        "eval_loss": 3.8387014071146646,
-        "definition_use_loss": 3.8359386920928955,
-        "cross_block_use_loss": 3.8564134438832602,
+        "eval_loss": 3.884747584660848,
+        "definition_use_loss": 3.822420835494995,
+        "cross_block_use_loss": 3.7649861176808677,
         "definition_use_targets": 11.0,
         "cross_block_use_targets": 8.0
       }
@@ -39,21 +48,21 @@
     {
       "variant": "ast_graph",
       "losses": [
-        3.795670747756958,
-        3.9294962882995605,
-        4.182792663574219,
-        3.677971839904785
+        4.031412124633789,
+        4.098405361175537,
+        4.040316104888916,
+        3.9049038887023926
       ],
-      "final_loss": 3.677971839904785,
-      "loss_delta": -0.11769890785217285,
-      "parameter_count": 6960,
-      "trainable_parameter_count": 6960,
+      "final_loss": 3.9049038887023926,
+      "loss_delta": -0.12650823593139648,
+      "parameter_count": 7792,
+      "trainable_parameter_count": 7792,
       "config": {
         "vocab_size": 45,
         "num_layers": 1,
         "hidden_size": 16,
         "block_size": 8,
-        "max_tokens": 64,
+        "max_tokens": 96,
         "num_heads": 4,
         "num_graph_heads": 4,
         "num_experts": 1,
@@ -61,7 +70,7 @@
         "ffn_multiplier": 1.5,
         "kv_compression": 0.5,
         "num_ast_types": 24,
-        "ast_dim": 8,
+        "ast_dim": 16,
         "ast_gate_scale": 0.1,
         "boundary_mix": 0.1,
         "boundary_width": 1,
@@ -78,9 +87,9 @@
         "use_boundary": true
       },
       "eval_metrics": {
-        "eval_loss": 3.8681676387786865,
-        "definition_use_loss": 3.6473655700683594,
-        "cross_block_use_loss": 3.695182959238688,
+        "eval_loss": 3.949099143346151,
+        "definition_use_loss": 3.8832828203837075,
+        "cross_block_use_loss": 3.971789598464966,
         "definition_use_targets": 11.0,
         "cross_block_use_targets": 8.0
       }
@@ -88,21 +97,21 @@
     {
       "variant": "variable_cvd",
       "losses": [
-        3.7812516689300537,
-        3.930251121520996,
-        3.8631083965301514,
-        3.6636786460876465
+        4.012413024902344,
+        4.197200775146484,
+        3.852271795272827,
+        3.892667770385742
       ],
-      "final_loss": 3.6636786460876465,
-      "loss_delta": -0.11757302284240723,
-      "parameter_count": 6976,
-      "trainable_parameter_count": 6976,
+      "final_loss": 3.892667770385742,
+      "loss_delta": -0.11974525451660156,
+      "parameter_count": 7808,
+      "trainable_parameter_count": 7808,
       "config": {
         "vocab_size": 45,
         "num_layers": 1,
         "hidden_size": 16,
         "block_size": 8,
-        "max_tokens": 64,
+        "max_tokens": 96,
         "num_heads": 4,
         "num_graph_heads": 4,
         "num_experts": 1,
@@ -110,7 +119,7 @@
         "ffn_multiplier": 1.5,
         "kv_compression": 0.5,
         "num_ast_types": 24,
-        "ast_dim": 8,
+        "ast_dim": 16,
         "ast_gate_scale": 0.1,
         "boundary_mix": 0.1,
         "boundary_width": 1,
@@ -127,9 +136,9 @@
         "use_boundary": true
       },
       "eval_metrics": {
-        "eval_loss": 3.7588442166646323,
-        "definition_use_loss": 3.9619890054066977,
-        "cross_block_use_loss": 4.042801141738892,
+        "eval_loss": 3.9189924399058023,
+        "definition_use_loss": 3.906863212585449,
+        "cross_block_use_loss": 3.856612205505371,
         "definition_use_targets": 11.0,
         "cross_block_use_targets": 8.0
       }
