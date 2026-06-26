@@ -12,8 +12,9 @@ a complete package: paper source, reference code, diagnostic scripts, tests,
 submission notes, arXiv source packaging, and a public GitHub release builder.
 
 The public reproducibility repository is available at
-https://github.com/ShengyaoLiang/csmt-gnn. Archived releases are indexed under
-the stable all-version Zenodo concept DOI
+https://github.com/ShengyaoLiang/csmt-gnn. The current `v0.1.2` archived
+release is https://doi.org/10.5281/zenodo.20925969, and archived releases are
+indexed under the stable all-version Zenodo concept DOI
 https://doi.org/10.5281/zenodo.20840624. I release the source package, paper
 source, tests, small diagnostic artifacts, and packaging scripts so that the
 evidence chain can be inspected without relying on private training data,

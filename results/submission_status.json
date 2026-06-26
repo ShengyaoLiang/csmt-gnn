@@ -86,7 +86,7 @@
   },
   "reproducibility_links": {
     "public_repository": "https://github.com/ShengyaoLiang/csmt-gnn",
-    "zenodo_current_release_doi": null,
+    "zenodo_current_release_doi": "https://doi.org/10.5281/zenodo.20925969",
     "zenodo_all_version_concept_doi": "https://doi.org/10.5281/zenodo.20840624",
     "scope": "source package, paper source, tests, small diagnostic artifacts, and packaging scripts; no private training data or unpublished checkpoints required for the released evidence chain"
   }
