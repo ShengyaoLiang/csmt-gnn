@@ -91,10 +91,19 @@ def load_vocab_size(root: Path) -> int:
 
 def load_num_ast_types(root: Path) -> int:
     vocab_path = root / "ast" / "ast_vocab.json"
+    array_max = -1
+    for path in (root / "ast").glob("*_ast_ids.npy"):
+        values = np.load(path)
+        if values.size:
+            array_max = max(array_max, int(values.max()))
     if not vocab_path.exists():
-        return 64
+        return max(64, array_max + 1)
     data = json.loads(vocab_path.read_text(encoding="utf-8"))
-    return max(8, len(data.get("type_vocab", {})))
+    type_vocab = data.get("type_vocab", {})
+    if not type_vocab:
+        return max(64, array_max + 1)
+    metadata_size = max(int(idx) for idx in type_vocab.values()) + 1
+    return max(8, metadata_size, array_max + 1)
 
 
 def set_seed(seed: int) -> None:
@@ -315,6 +324,15 @@ def masked_loss(logits: torch.Tensor, labels: torch.Tensor, mask: torch.Tensor) 
     return float(per_token[mask.view(-1)].mean().detach().cpu().item())
 
 
+def masked_top1_rate(logits: torch.Tensor, labels: torch.Tensor, mask: torch.Tensor) -> float:
+    if not bool(mask.any()):
+        return float("nan")
+    predictions = logits.argmax(dim=-1).view(-1)
+    flat_labels = labels.view(-1)
+    flat_mask = mask.view(-1)
+    return float((predictions[flat_mask] == flat_labels[flat_mask]).float().mean().detach().cpu().item())
+
+
 @torch.no_grad()
 def evaluate_variant(args, model, variant: str, arrays: DiagnosticArrays) -> Dict[str, float]:
     was_training = model.training
@@ -322,6 +340,8 @@ def evaluate_variant(args, model, variant: str, arrays: DiagnosticArrays) -> Dic
     total_losses: List[float] = []
     use_losses: List[float] = []
     cross_block_losses: List[float] = []
+    use_top1_rates: List[float] = []
+    cross_block_top1_rates: List[float] = []
     use_targets = 0
     cross_block_targets = 0
     for prefix in arrays.prefixes:
@@ -338,16 +358,22 @@ def evaluate_variant(args, model, variant: str, arrays: DiagnosticArrays) -> Dic
         cross_block_targets += int(masks["cross_block_use"].sum().item())
         use_loss = masked_loss(logits, labels, masks["use"])
         cross_loss = masked_loss(logits, labels, masks["cross_block_use"])
+        use_top1 = masked_top1_rate(logits, labels, masks["use"])
+        cross_top1 = masked_top1_rate(logits, labels, masks["cross_block_use"])
         if not np.isnan(use_loss):
             use_losses.append(use_loss)
+            use_top1_rates.append(use_top1)
         if not np.isnan(cross_loss):
             cross_block_losses.append(cross_loss)
+            cross_block_top1_rates.append(cross_top1)
     if was_training:
         model.train()
     return {
         "eval_loss": float(np.mean(total_losses)) if total_losses else float("nan"),
         "definition_use_loss": float(np.mean(use_losses)) if use_losses else float("nan"),
         "cross_block_use_loss": float(np.mean(cross_block_losses)) if cross_block_losses else float("nan"),
+        "definition_use_preservation": float(np.mean(use_top1_rates)) if use_top1_rates else float("nan"),
+        "cross_block_use_preservation": float(np.mean(cross_block_top1_rates)) if cross_block_top1_rates else float("nan"),
         "definition_use_targets": float(use_targets),
         "cross_block_use_targets": float(cross_block_targets),
     }
@@ -399,6 +425,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("results/diagnostic_poc_transformer.json"))
     parser.add_argument("--block-size", type=int, default=8)
     parser.add_argument("--max-tokens", type=int, default=96)
+    parser.add_argument("--case-set", choices=("tiny", "long", "all"), default="tiny")
     parser.add_argument("--hidden-size", type=int, default=32)
     parser.add_argument("--ast-dim", type=int, default=16)
     parser.add_argument("--ast-gate-scale", type=float, default=0.1)
@@ -418,7 +445,7 @@ def main() -> None:
     set_seed(args.seed)
     args.work_dir.mkdir(parents=True, exist_ok=True)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    build_diagnostics(args.work_dir, block_size=args.block_size, max_tokens=args.max_tokens)
+    build_diagnostics(args.work_dir, block_size=args.block_size, max_tokens=args.max_tokens, case_set=args.case_set)
 
     arrays = DiagnosticArrays(args.work_dir, args.max_tokens)
     vocab_size = load_vocab_size(args.work_dir)
@@ -427,6 +454,7 @@ def main() -> None:
     results = {
         "purpose": "tiny plumbing and falsification sanity check; not a benchmark",
         "seed": args.seed,
+        "case_set": args.case_set,
         "num_cases": len(arrays.prefixes),
         "vocab_size": vocab_size,
         "num_ast_types": num_ast_types,

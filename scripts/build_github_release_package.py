@@ -45,12 +45,21 @@ RESULT_FILES = [
     "results/lowcompute_validation_summary.json",
     "results/data_pipeline_validation.json",
     "results/structural_probe_eval.json",
+    "results/structural_hallucination_eval.json",
+    "results/block_size_sensitivity_32_64_128.json",
+    "results/block_size_sensitivity_32_64_128.md",
     "results/cvd_mask_audit.json",
     "results/architecture_cost_table.json",
     "results/diagnostic_poc_lowcompute.json",
     "results/diagnostic_poc_transformer.json",
     "results/diagnostic_poc_transformer_b4.json",
     "results/diagnostic_poc_transformer_b16.json",
+    "results/diagnostic_poc_transformer_b32.json",
+    "results/diagnostic_poc_transformer_b64.json",
+    "results/diagnostic_poc_transformer_b128.json",
+    "results/structural_probe_b32.json",
+    "results/structural_probe_b64.json",
+    "results/structural_probe_b128.json",
     "results/diagnostic_poc_transformer_seed1.json",
     "results/diagnostic_poc_transformer_seed2.json",
     "results/diagnostic_poc_transformer_seed3.json",
@@ -101,7 +110,7 @@ EXCLUDE_NAME_MARKERS = {
 }
 
 RENAMED_RELEASE_FILES = [
-    ("paper/main.pdf", "CSMT-GNN_arXiv_preprint_v0.1.2.pdf"),
+    ("paper/main.pdf", "CSMT-GNN_arXiv_preprint_v0.1.3.pdf"),
 ]
 
 

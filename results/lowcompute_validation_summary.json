@@ -117,6 +117,14 @@
         }
       ],
       "interpretation": "Edge-count audit supports the intended communication trade-off, but it is not a runtime benchmark and does not choose a universal block size."
+    },
+    "structural_hallucination_eval": {
+      "purpose": "direct structural-hallucination dependency preservation check; not a benchmark",
+      "candidate_source": "bundled reference snippets; no generated model candidates are included in this release",
+      "dependency_total": 6,
+      "dependency_preserved": 6,
+      "dependency_preservation_rate": 1.0,
+      "parse_success_rate": 1.0
     }
   },
   "stage1": {
@@ -348,7 +356,9 @@
       "A rough parameter-neighbor Transformer control has 6992 parameters, close to ast_graph at 6960 and variable_cvd at 6976 in the tiny setting.",
       "On the seed-7 block-8 run, CSMT graph variants improve cross-block use loss over token_baseline, but the pure and matched Transformers remain strong controls.",
       "Across seeds 1-5, ast_graph has the lowest mean cross-block use loss, but transformer_matched is close and high-variance; this is a comparison starting point, not evidence that CSMT-GNN beats Transformer.",
-      "Variable CVD should not be claimed as beneficial from this diagnostic; the five-seed random-vs-variable control is effectively tied."
+      "Variable CVD should not be claimed as beneficial from this diagnostic; the five-seed random-vs-variable control is effectively tied.",
+      "The direct structural-dependency evaluator is available for generated candidates; the bundled 1.0000 preservation result is only a reference-snippet sanity check.",
+      "The B=32,64,128 sensitivity run is negative/neutral: cross-block structure is present, but this tiny run does not show AST-graph preservation or a matched-Transformer win."
     ],
     "transformer_comparison": {
       "diagnostic_poc_transformer": "passed; includes pure token-only Transformer baseline and a rough parameter-neighbor Transformer control; hidden_size=16, max_tokens=64, steps=12, CPU",
@@ -911,7 +921,62 @@
       "cvd_control_1_5": [
         "results/diagnostic_cvd_control_1_5.json",
         "results/diagnostic_cvd_control_1_5.md"
+      ],
+      "structural_hallucination_eval": [
+        "results/structural_hallucination_eval.json"
+      ],
+      "block_size_sensitivity_32_64_128": [
+        "results/block_size_sensitivity_32_64_128.json",
+        "results/block_size_sensitivity_32_64_128.md"
       ]
+    },
+    "block_size_sensitivity_32_64_128": {
+      "purpose": "block-size sensitivity for tiny structural diagnostics; not a benchmark",
+      "case_set": "long",
+      "seed": 7,
+      "steps": 8,
+      "hidden_size": 16,
+      "ast_dim": 8,
+      "max_tokens": 220,
+      "rows": [
+        {
+          "block_size": 32,
+          "definition_use_pairs": 9.0,
+          "cross_block_pairs": 8.0,
+          "mean_max_block_distance": 5.0,
+          "ast_graph_cross_block_use_loss": 5.228549321492513,
+          "transformer_matched_cross_block_use_loss": 4.875134785970052,
+          "ast_graph_cross_block_use_preservation": 0.0,
+          "transformer_matched_cross_block_use_preservation": 0.0,
+          "ast_graph_params": 12208,
+          "transformer_matched_params": 12240
+        },
+        {
+          "block_size": 64,
+          "definition_use_pairs": 9.0,
+          "cross_block_pairs": 8.0,
+          "mean_max_block_distance": 2.0,
+          "ast_graph_cross_block_use_loss": 5.240825176239014,
+          "transformer_matched_cross_block_use_loss": 4.875134785970052,
+          "ast_graph_cross_block_use_preservation": 0.0,
+          "transformer_matched_cross_block_use_preservation": 0.0,
+          "ast_graph_params": 12208,
+          "transformer_matched_params": 12240
+        },
+        {
+          "block_size": 128,
+          "definition_use_pairs": 9.0,
+          "cross_block_pairs": 8.0,
+          "mean_max_block_distance": 1.0,
+          "ast_graph_cross_block_use_loss": 5.2433217366536455,
+          "transformer_matched_cross_block_use_loss": 4.875134785970052,
+          "ast_graph_cross_block_use_preservation": 0.0,
+          "transformer_matched_cross_block_use_preservation": 0.0,
+          "ast_graph_params": 12208,
+          "transformer_matched_params": 12240
+        }
+      ],
+      "interpretation": "Long diagnostic contains cross-block dependencies at B=32,64,128, but the tiny 8-step run shows zero cross-block preservation for both ast_graph and transformer_matched and lower cross-block loss for transformer_matched."
     }
   },
   "code_change_from_validation": "offline preprocessing now defaults to complete-file AST parsing; prefix parsing remains explicit for inference and leakage/degradation diagnostics; definition masks use Python binding spans when available",
@@ -919,6 +984,8 @@
     "Run a stricter parameter-matched Transformer-vs-CSMT study where depth, width, FFN size, training tokens, optimizer, and wall-clock budget are matched explicitly.",
     "Add dependency-specific generation or classification metrics instead of reading only next-token loss.",
     "Run 50-step and 100-step diagnostics only after the dependency-specific metric exists.",
-    "Stress-test prefix AST caching at block boundaries and report latency/quality tradeoffs."
+    "Stress-test prefix AST caching at block boundaries and report latency/quality tradeoffs.",
+    "Run structural_hallucination_eval.py on actual generated candidates, not only reference snippets.",
+    "Repeat the B=32,64,128 sensitivity diagnostic with longer training once the tiny run is stable."
   ]
 }

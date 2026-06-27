@@ -52,9 +52,10 @@ The arXiv package includes `main.tex`, `main.bbl`, `references.bib`, and
 ## Public Code Package
 
 - Public repository: https://github.com/ShengyaoLiang/csmt-gnn.
-- Current archived release DOI (`v0.1.2`): https://doi.org/10.5281/zenodo.20925969.
+- Current release line: `v0.1.3`.
 - Archived releases are indexed under the stable all-version Zenodo concept DOI:
   https://doi.org/10.5281/zenodo.20840624.
+- The `v0.1.3` version DOI should be recorded after Zenodo archives the GitHub release.
 - Builder: `python scripts\build_github_release_package.py`.
 - Output directory: `build/github_release/`.
 - Output zip: `build/csmt_gnn_github_release.zip`.
@@ -68,7 +69,7 @@ hidden scripts, or unpublished checkpoints.
 ## Current Commands
 
 ```powershell
-python -m py_compile ast_preprocessor.py csmt_gnn.py transformer_baseline.py train.py inference_ast.py diagnostics.py scripts\architecture_cost_table.py scripts\prefix_ast_degradation.py scripts\structural_probe_eval.py scripts\cvd_mask_audit.py scripts\diagnostic_poc_train.py scripts\summarize_diagnostics.py scripts\build_github_release_package.py scripts\build_arxiv_package.py
+python -m py_compile ast_preprocessor.py csmt_gnn.py transformer_baseline.py train.py inference_ast.py diagnostics.py scripts\architecture_cost_table.py scripts\prefix_ast_degradation.py scripts\structural_probe_eval.py scripts\structural_hallucination_eval.py scripts\block_size_sensitivity.py scripts\cvd_mask_audit.py scripts\diagnostic_poc_train.py scripts\summarize_diagnostics.py scripts\build_github_release_package.py scripts\build_arxiv_package.py
 python scripts\build_arxiv_package.py
 python scripts\build_github_release_package.py
 ```
@@ -82,6 +83,7 @@ python inference_ast.py --source-file tmp\diagnostics\prefix_probe.py --block-si
 python scripts\prefix_ast_degradation.py --source-file tmp\diagnostics\prefix_probe.py --block-size 8 --max-tokens 64 --repeat 1
 python scripts\architecture_cost_table.py --output results\architecture_cost_table.json
 python scripts\structural_probe_eval.py --output results\structural_probe_eval.json --block-size 8 --max-tokens 64
+python scripts\structural_hallucination_eval.py --output results\structural_hallucination_eval.json
 python -m unittest discover -s tests -v
 ```
 
@@ -90,6 +92,7 @@ When PyTorch is available:
 ```powershell
 python scripts\cvd_mask_audit.py --steps 24 --hidden-size 16 --ast-dim 8 --block-size 8 --max-tokens 64
 python scripts\diagnostic_poc_train.py --steps 12 --output results\diagnostic_poc_transformer.json
+python scripts\block_size_sensitivity.py --block-sizes 32,64,128 --steps 8 --hidden-size 16 --ast-dim 8 --max-tokens 220 --case-set long --seed 7 --output results\block_size_sensitivity_32_64_128.json --markdown-output results\block_size_sensitivity_32_64_128.md
 python scripts\summarize_diagnostics.py --inputs results\diagnostic_poc_transformer_seed1.json results\diagnostic_poc_transformer_seed2.json results\diagnostic_poc_transformer_seed3.json results\diagnostic_poc_transformer_seed4.json results\diagnostic_poc_transformer_seed5.json --output results\diagnostic_seed_sweep_1_5.json --markdown-output results\diagnostic_seed_sweep_1_5.md
 ```
 

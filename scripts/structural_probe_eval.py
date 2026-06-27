@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from ast_preprocessor import ASTFeatureExtractor, ASTPreprocessConfig, TypeVocabulary
-from diagnostics import CASES
+from diagnostics import select_cases
 
 
 def token_records(source: str, block_size: int, max_tokens: int) -> List[Dict[str, object]]:
@@ -87,12 +87,14 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path("results/structural_probe_eval.json"))
     parser.add_argument("--block-size", type=int, default=8)
     parser.add_argument("--max-tokens", type=int, default=256)
+    parser.add_argument("--case-set", choices=("tiny", "long", "all"), default="tiny")
     args = parser.parse_args()
 
     result = {
         "purpose": "structural diagnostic coverage; not model accuracy",
         "block_size": args.block_size,
-        "cases": [summarize_case(name, source, args.block_size, args.max_tokens) for name, source in CASES],
+        "case_set": args.case_set,
+        "cases": [summarize_case(name, source, args.block_size, args.max_tokens) for name, source in select_cases(args.case_set)],
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2), encoding="utf-8")

@@ -12,13 +12,13 @@ a complete package: paper source, reference code, diagnostic scripts, tests,
 submission notes, arXiv source packaging, and a public GitHub release builder.
 
 The public reproducibility repository is available at
-https://github.com/ShengyaoLiang/csmt-gnn. The current `v0.1.2` archived
-release is https://doi.org/10.5281/zenodo.20925969, and archived releases are
-indexed under the stable all-version Zenodo concept DOI
-https://doi.org/10.5281/zenodo.20840624. I release the source package, paper
-source, tests, small diagnostic artifacts, and packaging scripts so that the
-evidence chain can be inspected without relying on private training data,
-hidden scripts, or unpublished checkpoints.
+https://github.com/ShengyaoLiang/csmt-gnn. The current public release line is
+`v0.1.3`. Archived releases are indexed under the stable all-version Zenodo
+concept DOI https://doi.org/10.5281/zenodo.20840624. The new `v0.1.3` version
+DOI should be recorded after Zenodo archives the GitHub release. I release the
+source package, paper source, tests, small diagnostic artifacts, and packaging
+scripts so that the evidence chain can be inspected without relying on private
+training data, hidden scripts, or unpublished checkpoints.
 
 ## Scientific Position
 
@@ -42,6 +42,8 @@ contains:
 - a structural edge-count audit for the block-local plus block-graph trade-off;
 - small structural diagnostics for shadowing, long-range imports, and guarded
   attributes;
+- a direct structural-dependency preservation evaluator for candidate generated
+  snippets, covering imports, local bindings, and guarded attribute access;
 - structural probe coverage for definition-use and cross-block relations;
 - a CVD mask audit that separates definition-targeted sampling from random
   valid-block sampling;
@@ -56,6 +58,8 @@ contains:
 - an independent token-only Transformer baseline and a rough parameter-neighbor
   Transformer control inside the tiny diagnostic script;
 - a local diagnostic record under `results/lowcompute_validation_summary.md`;
+- a block-size sensitivity diagnostic at `B=32,64,128` for the long structural
+  cases, reported as boundary evidence rather than a performance win;
 - a staged falsification plan before any future 300M--700M parameter study.
 
 ## Development Position
@@ -175,6 +179,32 @@ python scripts\structural_probe_eval.py --output results\structural_probe_eval.j
   --block-size 8 --max-tokens 64
 ```
 
+Measure direct dependency preservation on diagnostic or generated snippets:
+
+```powershell
+python scripts\structural_hallucination_eval.py `
+  --output results\structural_hallucination_eval.json
+```
+
+Without `--candidates`, this is only a reference-snippet sanity check. To score
+generated snippets, pass a JSON object keyed by diagnostic case name:
+
+```powershell
+python scripts\structural_hallucination_eval.py `
+  --candidates generated_candidates.json `
+  --output results\structural_hallucination_eval.json
+```
+
+Run the block-size sensitivity diagnostic used in the current release:
+
+```powershell
+python scripts\block_size_sensitivity.py --block-sizes 32,64,128 `
+  --steps 8 --hidden-size 16 --ast-dim 8 --max-tokens 220 `
+  --case-set long --seed 7 `
+  --output results\block_size_sensitivity_32_64_128.json `
+  --markdown-output results\block_size_sensitivity_32_64_128.md
+```
+
 Audit CVD sampling without claiming model quality:
 
 ```powershell
@@ -236,8 +266,12 @@ AST gate, block graph, boundary mixing, CVD, dense FFN, MoE fallback, and the
 two token-only Transformer controls. It also records structural coverage and
 CVD sampling audits. The current seed sweep covers seeds 1-5 for the main
 Transformer/CSMT diagnostic variants, and a separate random-vs-variable CVD
-control also covers seeds 1-5. It is not a benchmark result and does not
-establish that CSMT-GNN beats Transformer or that CVD improves accuracy.
+control also covers seeds 1-5. The `B=32,64,128` sensitivity run found
+cross-block dependencies at every tested block size, but in the tiny 8-step
+run both `ast_graph` and `transformer_matched` had zero cross-block
+preservation, and the matched Transformer had lower cross-block loss. It is not
+a benchmark result and does not establish that CSMT-GNN beats Transformer or
+that CVD improves accuracy.
 
 Train on paired token and AST arrays:
 

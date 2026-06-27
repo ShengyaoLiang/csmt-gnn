@@ -91,6 +91,12 @@ rewrite.
   training instead of reusing incompatible token ids per sample.
 - `scripts/structural_probe_eval.py` measures definition-use and cross-block
   coverage in the tiny diagnostics before model claims are made.
+- `scripts/structural_hallucination_eval.py` directly scores dependency
+  preservation in reference or generated snippets, including imports, local
+  bindings, and guarded attribute access.
+- `scripts/block_size_sensitivity.py` repeats the long diagnostic at
+  `B=32,64,128` and records both cross-block loss and top-1 dependency
+  preservation.
 - `scripts/architecture_cost_table.py` records dense causal attention edge
   counts against block-local plus block-graph edge counts for several sequence
   lengths and block sizes.
@@ -112,7 +118,7 @@ rewrite.
 ## Minimal Checks
 
 ```powershell
-python -m py_compile ast_preprocessor.py csmt_gnn.py transformer_baseline.py train.py inference_ast.py diagnostics.py scripts\architecture_cost_table.py scripts\prefix_ast_degradation.py scripts\structural_probe_eval.py scripts\cvd_mask_audit.py scripts\validate_data_pipeline.py scripts\diagnostic_poc_train.py scripts\summarize_diagnostics.py scripts\build_github_release_package.py scripts\build_arxiv_package.py
+python -m py_compile ast_preprocessor.py csmt_gnn.py transformer_baseline.py train.py inference_ast.py diagnostics.py scripts\architecture_cost_table.py scripts\prefix_ast_degradation.py scripts\structural_probe_eval.py scripts\structural_hallucination_eval.py scripts\block_size_sensitivity.py scripts\cvd_mask_audit.py scripts\validate_data_pipeline.py scripts\diagnostic_poc_train.py scripts\summarize_diagnostics.py scripts\build_github_release_package.py scripts\build_arxiv_package.py
 python scripts\build_arxiv_package.py
 python scripts\build_github_release_package.py
 ```
@@ -126,6 +132,7 @@ python inference_ast.py --source-file tmp\diagnostics\prefix_probe.py --block-si
 python scripts\prefix_ast_degradation.py --source-file tmp\diagnostics\prefix_probe.py --block-size 8 --max-tokens 64 --repeat 1
 python scripts\architecture_cost_table.py --output results\architecture_cost_table.json
 python scripts\structural_probe_eval.py --output results\structural_probe_eval.json --block-size 8 --max-tokens 64
+python scripts\structural_hallucination_eval.py --output results\structural_hallucination_eval.json
 python scripts\validate_data_pipeline.py --data-path tmp\diagnostics\tokens --ast-path tmp\diagnostics\ast --vocab-size 128 --block-size 8 --max-tokens 64
 python -m unittest discover -s tests -v
 ```
@@ -135,6 +142,7 @@ When PyTorch is available:
 ```powershell
 python scripts\cvd_mask_audit.py --steps 24 --hidden-size 16 --ast-dim 8 --block-size 8 --max-tokens 64
 python scripts\diagnostic_poc_train.py --steps 12 --output results\diagnostic_poc_transformer.json
+python scripts\block_size_sensitivity.py --block-sizes 32,64,128 --steps 8 --hidden-size 16 --ast-dim 8 --max-tokens 220 --case-set long --seed 7 --output results\block_size_sensitivity_32_64_128.json --markdown-output results\block_size_sensitivity_32_64_128.md
 python scripts\summarize_diagnostics.py --inputs results\diagnostic_poc_transformer_seed1.json results\diagnostic_poc_transformer_seed2.json results\diagnostic_poc_transformer_seed3.json results\diagnostic_poc_transformer_seed4.json results\diagnostic_poc_transformer_seed5.json --output results\diagnostic_seed_sweep_1_5.json --markdown-output results\diagnostic_seed_sweep_1_5.md
 ```
 
@@ -154,3 +162,7 @@ python scripts\summarize_diagnostics.py --inputs results\diagnostic_poc_transfor
 - The local Transformer comparison is also a smoke test only. It shows the
   baseline exists and that `transformer_matched` is a strong control; it does
   not establish that CSMT-GNN beats Transformer.
+- The `B=32,64,128` sensitivity diagnostic is currently a boundary result:
+  cross-block structure is present at every tested block size, but the tiny
+  8-step run does not show AST-graph preservation or a win over the matched
+  Transformer.

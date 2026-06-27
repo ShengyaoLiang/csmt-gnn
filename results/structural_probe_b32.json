@@ -1,0 +1,136 @@
+{
+  "purpose": "structural diagnostic coverage; not model accuracy",
+  "block_size": 32,
+  "case_set": "long",
+  "cases": [
+    {
+      "name": "long_scope_b128",
+      "num_tokens": 175,
+      "num_blocks": 6,
+      "definition_tokens": 56,
+      "definition_blocks": 6,
+      "definition_use_pairs": 4,
+      "cross_block_pairs": 3,
+      "max_token_distance": 170,
+      "max_block_distance": 5,
+      "pairs": [
+        {
+          "token": "anchor",
+          "definition_index": 3,
+          "use_index": 8,
+          "distance": 5,
+          "definition_block": 0,
+          "use_block": 0,
+          "block_distance": 0,
+          "cross_block": false
+        },
+        {
+          "token": "local_value",
+          "definition_index": 6,
+          "use_index": 166,
+          "distance": 160,
+          "definition_block": 0,
+          "use_block": 5,
+          "block_distance": 5,
+          "cross_block": true
+        },
+        {
+          "token": "anchor",
+          "definition_index": 3,
+          "use_index": 168,
+          "distance": 165,
+          "definition_block": 0,
+          "use_block": 5,
+          "block_distance": 5,
+          "cross_block": true
+        },
+        {
+          "token": "carry",
+          "definition_index": 1,
+          "use_index": 171,
+          "distance": 170,
+          "definition_block": 0,
+          "use_block": 5,
+          "block_distance": 5,
+          "cross_block": true
+        }
+      ]
+    },
+    {
+      "name": "long_import_b128",
+      "num_tokens": 172,
+      "num_blocks": 6,
+      "definition_tokens": 55,
+      "definition_blocks": 6,
+      "definition_use_pairs": 3,
+      "cross_block_pairs": 3,
+      "max_token_distance": 166,
+      "max_block_distance": 5,
+      "pairs": [
+        {
+          "token": "math",
+          "definition_index": 1,
+          "use_index": 165,
+          "distance": 164,
+          "definition_block": 0,
+          "use_block": 5,
+          "block_distance": 5,
+          "cross_block": true
+        },
+        {
+          "token": "radius",
+          "definition_index": 5,
+          "use_index": 169,
+          "distance": 164,
+          "definition_block": 0,
+          "use_block": 5,
+          "block_distance": 5,
+          "cross_block": true
+        },
+        {
+          "token": "radius",
+          "definition_index": 5,
+          "use_index": 171,
+          "distance": 166,
+          "definition_block": 0,
+          "use_block": 5,
+          "block_distance": 5,
+          "cross_block": true
+        }
+      ]
+    },
+    {
+      "name": "long_guard_b128",
+      "num_tokens": 174,
+      "num_blocks": 6,
+      "definition_tokens": 54,
+      "definition_blocks": 5,
+      "definition_use_pairs": 2,
+      "cross_block_pairs": 2,
+      "max_token_distance": 166,
+      "max_block_distance": 5,
+      "pairs": [
+        {
+          "token": "box",
+          "definition_index": 3,
+          "use_index": 163,
+          "distance": 160,
+          "definition_block": 0,
+          "use_block": 5,
+          "block_distance": 5,
+          "cross_block": true
+        },
+        {
+          "token": "box",
+          "definition_index": 3,
+          "use_index": 169,
+          "distance": 166,
+          "definition_block": 0,
+          "use_block": 5,
+          "block_distance": 5,
+          "cross_block": true
+        }
+      ]
+    }
+  ]
+}

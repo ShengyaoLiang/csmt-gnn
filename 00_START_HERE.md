@@ -23,6 +23,8 @@ This folder is now organized around the arXiv-first release:
 - Latest local diagnostic summary: `results/lowcompute_validation_summary.md`
 - Architecture cost audit: `results/architecture_cost_table.json`
 - Structural probe result: `results/structural_probe_eval.json`
+- Direct dependency-preservation result: `results/structural_hallucination_eval.json`
+- Block-size sensitivity result: `results/block_size_sensitivity_32_64_128.md`
 - CVD mask audit: `results/cvd_mask_audit.json`
 - Data pipeline preflight: `results/data_pipeline_validation.json`
 - Transformer comparison diagnostic: `results/diagnostic_poc_transformer.json`
@@ -54,6 +56,8 @@ Run the current local mechanism checks:
 python scripts\architecture_cost_table.py --output results\architecture_cost_table.json
 python scripts\structural_probe_eval.py --output results\structural_probe_eval.json `
   --block-size 8 --max-tokens 64
+python scripts\structural_hallucination_eval.py `
+  --output results\structural_hallucination_eval.json
 python scripts\cvd_mask_audit.py --output results\cvd_mask_audit.json `
   --steps 24 --hidden-size 16 --ast-dim 8 --block-size 8 --max-tokens 64
 python scripts\validate_data_pipeline.py --data-path tmp\cvd_mask_audit\tokens `
@@ -61,6 +65,9 @@ python scripts\validate_data_pipeline.py --data-path tmp\cvd_mask_audit\tokens `
   --max-tokens 64 --output results\data_pipeline_validation.json
 python scripts\diagnostic_poc_train.py --output results\diagnostic_poc_transformer.json `
   --steps 12 --hidden-size 16 --ast-dim 8 --block-size 8 --max-tokens 64
+python scripts\block_size_sensitivity.py --block-sizes 32,64,128 `
+  --steps 8 --hidden-size 16 --ast-dim 8 --max-tokens 220 `
+  --case-set long --seed 7
 ```
 
 Compile the paper with Docker:

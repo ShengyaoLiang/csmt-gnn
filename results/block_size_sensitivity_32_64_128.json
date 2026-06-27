@@ -1,0 +1,52 @@
+{
+  "purpose": "block-size sensitivity for tiny structural diagnostics; not a benchmark",
+  "block_sizes": [
+    32,
+    64,
+    128
+  ],
+  "steps": 8,
+  "hidden_size": 16,
+  "ast_dim": 8,
+  "max_tokens": 220,
+  "case_set": "long",
+  "seed": 7,
+  "rows": [
+    {
+      "block_size": 32,
+      "definition_use_pairs": 9.0,
+      "cross_block_pairs": 8.0,
+      "mean_max_block_distance": 5.0,
+      "ast_graph_cross_block_use_loss": 5.228549321492513,
+      "transformer_matched_cross_block_use_loss": 4.875134785970052,
+      "ast_graph_cross_block_use_preservation": 0.0,
+      "transformer_matched_cross_block_use_preservation": 0.0,
+      "ast_graph_params": 12208,
+      "transformer_matched_params": 12240
+    },
+    {
+      "block_size": 64,
+      "definition_use_pairs": 9.0,
+      "cross_block_pairs": 8.0,
+      "mean_max_block_distance": 2.0,
+      "ast_graph_cross_block_use_loss": 5.240825176239014,
+      "transformer_matched_cross_block_use_loss": 4.875134785970052,
+      "ast_graph_cross_block_use_preservation": 0.0,
+      "transformer_matched_cross_block_use_preservation": 0.0,
+      "ast_graph_params": 12208,
+      "transformer_matched_params": 12240
+    },
+    {
+      "block_size": 128,
+      "definition_use_pairs": 9.0,
+      "cross_block_pairs": 8.0,
+      "mean_max_block_distance": 1.0,
+      "ast_graph_cross_block_use_loss": 5.2433217366536455,
+      "transformer_matched_cross_block_use_loss": 4.875134785970052,
+      "ast_graph_cross_block_use_preservation": 0.0,
+      "transformer_matched_cross_block_use_preservation": 0.0,
+      "ast_graph_params": 12208,
+      "transformer_matched_params": 12240
+    }
+  ]
+}

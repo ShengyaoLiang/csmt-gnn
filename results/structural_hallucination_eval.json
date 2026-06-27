@@ -1,0 +1,51 @@
+{
+  "purpose": "direct structural-hallucination dependency preservation check; not a benchmark",
+  "dependency_total": 6,
+  "dependency_preserved": 6,
+  "dependency_preservation_rate": 1.0,
+  "parse_success_rate": 1.0,
+  "cases": [
+    {
+      "name": "shadowing",
+      "parse_ok": true,
+      "dependency_total": 2,
+      "dependency_preserved": 2,
+      "dependency_preservation_rate": 1.0,
+      "import_total": 0,
+      "import_preserved": 0,
+      "scope_total": 2,
+      "scope_preserved": 2,
+      "guard_total": 0,
+      "guard_preserved": 0,
+      "issues": []
+    },
+    {
+      "name": "long_range_import",
+      "parse_ok": true,
+      "dependency_total": 2,
+      "dependency_preserved": 2,
+      "dependency_preservation_rate": 1.0,
+      "import_total": 1,
+      "import_preserved": 1,
+      "scope_total": 1,
+      "scope_preserved": 1,
+      "guard_total": 0,
+      "guard_preserved": 0,
+      "issues": []
+    },
+    {
+      "name": "guarded_attribute",
+      "parse_ok": true,
+      "dependency_total": 2,
+      "dependency_preserved": 2,
+      "dependency_preservation_rate": 1.0,
+      "import_total": 0,
+      "import_preserved": 0,
+      "scope_total": 1,
+      "scope_preserved": 1,
+      "guard_total": 1,
+      "guard_preserved": 1,
+      "issues": []
+    }
+  ]
+}

@@ -55,23 +55,25 @@
     "cvd_audit_contracts": "CVD sampling counters are opt-in through cvd_audit; default training samples masks without per-step count synchronization",
     "cvd_token_mask_contract": "token-level CVD masks are reduced using the current forward-pass block count, preventing short next-token inputs from being misread as block-level masks",
     "graph_valid_block_mask": "prefix block graph attention combines causal visibility with valid-block key masking and zeroes padded block outputs",
-    "trainer_prefix_feature_trim": "train.py trims AST ids and definition masks to the next-token model-input prefix before each forward pass"
+    "trainer_prefix_feature_trim": "train.py trims AST ids and definition masks to the next-token model-input prefix before each forward pass",
+    "structural_dependency_preservation_eval": "scripts/structural_hallucination_eval.py checks imports, local bindings, and guarded attribute access; bundled result is reference-snippet sanity only unless --candidates is supplied",
+    "block_size_sensitivity_eval": "scripts/block_size_sensitivity.py runs long diagnostics at B=32,64,128 and reports cross-block loss plus top-1 preservation"
   },
   "verification_status": {
     "system_python": "Python 3.10.11 lacks NumPy and PyTorch in this workspace",
     "bundled_python": "Python 3.12.13 has NumPy and PDF packages, but lacks torch/tree_sitter/tree_sitter_python",
     "torch_forward_backward": "passed through scripts/diagnostic_poc_train.py tiny CPU run; 10 variants completed 12 steps each, including transformer_baseline and transformer_matched",
     "diagnostic_poc_train": "passed locally on CPU with independent Transformer controls; results/diagnostic_poc_transformer.json and results/lowcompute_validation_summary.md written; not a benchmark",
-    "python_syntax": "passed on 2026-06-27 after five-seed diagnostic summary integration",
-    "unit_tests": "41/41 passed with PyTorch CPU in .venv-lowcompute on 2026-06-27 after five-seed diagnostic summary integration",
+    "python_syntax": "passed with .venv-lowcompute on 2026-06-27 after structural preservation and block-size sensitivity integration",
+    "unit_tests": "47/47 passed with .venv-lowcompute on 2026-06-27 after structural preservation and block-size sensitivity integration",
     "data_pipeline_preflight": "passed on 3 tiny diagnostic samples; results/data_pipeline_validation.json written",
     "diagnostics_smoke": "passed; generated shadowing, long_range_import, and guarded_attribute arrays with refined Python-binding definition masks",
     "prefix_ast_smoke": "passed with tree-sitter in .venv-lowcompute; inference_ast.py avg_ms=1.555 over repeat=32 on prefix_probe.py",
-    "paper_compile": "passed with Docker TeX Live on 2026-06-25 after reproducibility-link update; PDF is 16 pages; final log has no real warnings",
-    "paper_text_scan": "passed after reproducibility-link update; GitHub and Zenodo links are extractable and no stale target, formula-placeholder, or compute-apology remnants were found",
-    "paper_visual_check": "passed on rendered pages 1, 13, and 14 after reproducibility-link update; abstract and reproducibility notes render correctly",
-    "arxiv_package": "rebuilt after reproducibility-link update; upload_ready=true; files: main.tex, main.bbl, references.bib, arxiv_metadata.json",
-    "github_release_package": "rebuilt after reproducibility-link update; zip integrity passed with 55 files and no corrupt entries",
+    "paper_compile": "passed with Docker TeX Live on 2026-06-27 after structural preservation and block-size sensitivity integration; PDF is 17 pages; final log has no real warnings",
+    "paper_text_scan": "passed after structural preservation and block-size sensitivity integration; no stale target, formula-placeholder, or compute-apology remnants were found",
+    "paper_visual_check": "passed on rendered pages 1 and 17 after structural preservation and block-size sensitivity integration; no overlap or table overflow observed",
+    "arxiv_package": "rebuilt after structural preservation and block-size sensitivity integration; upload_ready=true; zip integrity passed with 5 files",
+    "github_release_package": "rebuilt in an isolated package-check directory after structural preservation and block-size sensitivity integration; zip integrity passed with 81 files",
     "prefix_ast_degradation": "passed with tree-sitter; fallback_rate=0.3846, unknown_rate=0.0000, prefix_full_divergence=0.4615, avg_ms=4.296 on tiny prefix_probe.py",
     "lowcompute_environment": "created .venv-lowcompute with Python 3.10.11, NumPy 2.2.6, tree-sitter 0.25.x, and torch 2.12.1+cpu; GPU not used",
     "docker": "docker hello-world passed; Docker daemon is usable",
@@ -83,11 +85,13 @@
     "cvd_mask_audit": "passed; variable scope sampled only definition-eligible blocks while random scope sampled all valid blocks; not model quality evidence",
     "transformer_comparison": "passed as a smoke test; transformer_matched is a rough parameter-neighbor control, and results do not establish that CSMT-GNN beats Transformer",
     "architecture_cost_table": "passed; results/architecture_cost_table.json records dense causal edge counts vs block-local plus block-graph edge counts; not a runtime benchmark",
-    "quick_arch_update_diagnostic": "passed locally on CPU with transformer_baseline, ast_graph, and variable_cvd for 4 steps; results/diagnostic_poc_quick_arch_update.json written; not a benchmark"
+    "quick_arch_update_diagnostic": "passed locally on CPU with transformer_baseline, ast_graph, and variable_cvd for 4 steps; results/diagnostic_poc_quick_arch_update.json written; not a benchmark",
+    "structural_hallucination_eval": "passed with .venv-lowcompute on 2026-06-27; dependency_preservation_rate=1.0 and parse_success_rate=1.0 on bundled reference snippets",
+    "block_size_sensitivity_32_64_128": "passed with .venv-lowcompute on 2026-06-27; cross-block dependencies present at B=32,64,128, but both ast_graph and transformer_matched had 0.0 preservation and transformer_matched had lower cross-block loss"
   },
   "reproducibility_links": {
     "public_repository": "https://github.com/ShengyaoLiang/csmt-gnn",
-    "zenodo_current_release_doi": "https://doi.org/10.5281/zenodo.20925969",
+    "zenodo_current_release_doi": "pending Zenodo version DOI for v0.1.3; use concept DOI until archived",
     "zenodo_all_version_concept_doi": "https://doi.org/10.5281/zenodo.20840624",
     "scope": "source package, paper source, tests, small diagnostic artifacts, and packaging scripts; no private training data or unpublished checkpoints required for the released evidence chain"
   }

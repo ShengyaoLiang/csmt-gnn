@@ -1,0 +1,111 @@
+{
+  "purpose": "tiny plumbing and falsification sanity check; not a benchmark",
+  "seed": 7,
+  "case_set": "long",
+  "num_cases": 6,
+  "vocab_size": 131,
+  "num_ast_types": 24,
+  "prefix_feature_audit": {
+    "cases": 6,
+    "token_level_masks": 6,
+    "max_input_length": 174,
+    "max_ast_blocks": 2,
+    "max_mask_width": 174,
+    "all_prefix_aligned": 1.0,
+    "violations": []
+  },
+  "variants": [
+    {
+      "variant": "transformer_matched",
+      "losses": [
+        5.084782600402832,
+        5.078097820281982,
+        5.020451545715332,
+        5.1467437744140625,
+        4.975334167480469,
+        5.033771991729736,
+        4.915218830108643,
+        4.895740032196045
+      ],
+      "final_loss": 4.895740032196045,
+      "loss_delta": -0.1890425682067871,
+      "parameter_count": 12240,
+      "trainable_parameter_count": 12240,
+      "config": {
+        "vocab_size": 131,
+        "num_layers": 1,
+        "hidden_size": 16,
+        "max_tokens": 220,
+        "num_heads": 4,
+        "ffn_multiplier": 4.5,
+        "dropout": 0.0,
+        "validate_input_ranges": true,
+        "tie_embeddings": false
+      },
+      "eval_metrics": {
+        "eval_loss": 4.912732362747192,
+        "definition_use_loss": 5.040423075358073,
+        "cross_block_use_loss": 4.875134785970052,
+        "definition_use_preservation": 0.0,
+        "cross_block_use_preservation": 0.0,
+        "definition_use_targets": 20.0,
+        "cross_block_use_targets": 8.0
+      }
+    },
+    {
+      "variant": "ast_graph",
+      "losses": [
+        4.973793983459473,
+        5.19072151184082,
+        5.013876914978027,
+        4.989067554473877,
+        5.042357921600342,
+        4.924949645996094,
+        4.823372840881348,
+        5.027498245239258
+      ],
+      "final_loss": 5.027498245239258,
+      "loss_delta": 0.053704261779785156,
+      "parameter_count": 12208,
+      "trainable_parameter_count": 12208,
+      "config": {
+        "vocab_size": 131,
+        "num_layers": 1,
+        "hidden_size": 16,
+        "block_size": 128,
+        "max_tokens": 220,
+        "num_heads": 4,
+        "num_graph_heads": 4,
+        "num_experts": 1,
+        "moe_top_k": 1,
+        "ffn_multiplier": 1.5,
+        "kv_compression": 0.5,
+        "num_ast_types": 24,
+        "ast_dim": 8,
+        "ast_gate_scale": 0.1,
+        "boundary_mix": 0.1,
+        "boundary_width": 1,
+        "cvd_prob": 0.0,
+        "cvd_scope": "variable",
+        "cvd_audit": false,
+        "dropout": 0.0,
+        "validate_input_ranges": true,
+        "tie_embeddings": false,
+        "use_ast_gate": true,
+        "use_block_graph": true,
+        "use_cvd": false,
+        "use_moe": false,
+        "use_boundary": true
+      },
+      "eval_metrics": {
+        "eval_loss": 4.894631306330363,
+        "definition_use_loss": 5.114897886912028,
+        "cross_block_use_loss": 5.2433217366536455,
+        "definition_use_preservation": 0.0,
+        "cross_block_use_preservation": 0.0,
+        "definition_use_targets": 20.0,
+        "cross_block_use_targets": 8.0
+      }
+    }
+  ]
+}

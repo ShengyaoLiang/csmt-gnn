@@ -12,14 +12,14 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Sequence, Tuple
 
 import numpy as np
 
 from ast_preprocessor import ASTFeatureExtractor, ASTPreprocessConfig, TypeVocabulary, tokenize_python_source
 
 
-CASES: List[Tuple[str, str]] = [
+TINY_CASES: List[Tuple[str, str]] = [
     (
         "shadowing",
         """
@@ -58,6 +58,57 @@ def read(box):
 ]
 
 
+def _long_filler(indent: str, count: int) -> str:
+    return "\n".join(f"{indent}pad_{idx} = {idx}" for idx in range(count))
+
+
+LONG_CASES: List[Tuple[str, str]] = [
+    (
+        "long_scope_b128",
+        f"""
+def carry(anchor):
+    local_value = anchor
+{_long_filler("    ", 52)}
+    return local_value + anchor
+result = carry(3)
+""".strip(),
+    ),
+    (
+        "long_import_b128",
+        f"""
+import math
+
+def area(radius):
+{_long_filler("    ", 52)}
+    return math.pi * radius * radius
+""".strip(),
+    ),
+    (
+        "long_guard_b128",
+        f"""
+def read(box):
+{_long_filler("    ", 52)}
+    if box is not None:
+        return box.value
+    return 0
+""".strip(),
+    ),
+]
+
+
+CASES: List[Tuple[str, str]] = TINY_CASES
+
+
+def select_cases(case_set: str) -> Sequence[Tuple[str, str]]:
+    if case_set == "tiny":
+        return TINY_CASES
+    if case_set == "long":
+        return LONG_CASES
+    if case_set == "all":
+        return [*TINY_CASES, *LONG_CASES]
+    raise ValueError(f"unknown case_set={case_set!r}; expected tiny, long, or all")
+
+
 def lexical_token_ids(source: str, max_tokens: int, vocab: Dict[str, int]) -> np.ndarray:
     spans = tokenize_python_source(source, max_tokens)
     ids = []
@@ -68,7 +119,7 @@ def lexical_token_ids(source: str, max_tokens: int, vocab: Dict[str, int]) -> np
     return np.asarray(ids, dtype=np.int64)
 
 
-def run(output_dir: Path, block_size: int, max_tokens: int) -> None:
+def run(output_dir: Path, block_size: int, max_tokens: int, case_set: str = "tiny") -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     ast_dir = output_dir / "ast"
     token_dir = output_dir / "tokens"
@@ -79,7 +130,8 @@ def run(output_dir: Path, block_size: int, max_tokens: int) -> None:
     token_vocab = {"<PAD>": 0, "<UNK>": 1}
     extractor = ASTFeatureExtractor(ASTPreprocessConfig(block_size=block_size, max_tokens=max_tokens), vocab)
     summary = []
-    for idx, (name, source) in enumerate(CASES):
+    cases = select_cases(case_set)
+    for idx, (name, source) in enumerate(cases):
         ast_ids, block_mask, token_mask = extractor.extract(source)
         tokens = lexical_token_ids(source, max_tokens, token_vocab)
         prefix = f"{idx}_{name}"
@@ -101,6 +153,7 @@ def run(output_dir: Path, block_size: int, max_tokens: int) -> None:
         json.dumps(
             {
                 "config": {"block_size": block_size, "max_tokens": max_tokens},
+                "case_set": case_set,
                 "token_alignment": "python_lexical_tokens",
                 "per_token_prefix": False,
                 "type_vocab": vocab.to_json(),
@@ -120,8 +173,9 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, default=Path("tmp/diagnostics"))
     parser.add_argument("--block-size", type=int, default=8)
     parser.add_argument("--max-tokens", type=int, default=256)
+    parser.add_argument("--case-set", choices=("tiny", "long", "all"), default="tiny")
     args = parser.parse_args()
-    run(args.output_dir, args.block_size, args.max_tokens)
+    run(args.output_dir, args.block_size, args.max_tokens, case_set=args.case_set)
 
 
 if __name__ == "__main__":
