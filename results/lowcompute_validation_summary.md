@@ -14,7 +14,7 @@ This is a local mechanism-check record, not a benchmark result.
 ## Stage 0
 
 - `py_compile`: passed
-- Unit tests: 37/37 passed with PyTorch CPU after adding fail-fast Transformer
+- Unit tests: 41/41 passed with PyTorch CPU after adding fail-fast Transformer
   baseline checks, incremental AST configuration checks, and opt-in CVD audit
   coverage plus validated-pipeline input range controls and a token-level CVD
   mask regression test for short next-token inputs
@@ -74,15 +74,26 @@ enabled explicitly for this audit.
 
 ## Transformer Seed Sweep Summary
 
-Seeds 1-3 use block size 8 and the same 12-step CPU diagnostic. Values are means with population standard deviations in parentheses.
+Seeds 1-5 use block size 8 and the same 12-step CPU diagnostic. Values are means with population standard deviations in parentheses.
 
 | Variant | Params | Final loss | Eval loss | Cross-block use loss |
 |---|---:|---:|---:|---:|
-| `transformer_baseline` | 4688 | 3.7680 (0.0121) | 3.6536 (0.0215) | 3.6739 (0.1213) |
-| `transformer_matched` | 6992 | 3.6885 (0.0832) | 3.6661 (0.0921) | 3.5243 (0.3131) |
-| `ast_graph` | 6960 | 3.6777 (0.0955) | 3.6599 (0.0796) | 3.5366 (0.2761) |
-| `variable_cvd` | 6976 | 3.7446 (0.0514) | 3.6843 (0.0276) | 3.8471 (0.2794) |
-| `full_moe` | 8160 | 3.6761 (0.0412) | 3.6085 (0.0554) | 3.7173 (0.1219) |
+| `transformer_baseline` | 4688 | 3.7466 (0.0664) | 3.6541 (0.0439) | 3.7939 (0.1964) |
+| `transformer_matched` | 6992 | 3.7029 (0.0673) | 3.6396 (0.0802) | 3.5655 (0.3241) |
+| `ast_graph` | 6960 | 3.6608 (0.0836) | 3.6346 (0.0693) | 3.5089 (0.2441) |
+| `variable_cvd` | 6976 | 3.7325 (0.0610) | 3.6748 (0.0448) | 3.8846 (0.2214) |
+| `full_moe` | 8160 | 3.7526 (0.0994) | 3.6491 (0.0657) | 3.6296 (0.1806) |
+
+## CVD Random-Control Sweep
+
+Seeds 1-5 compare random block replacement with variable-targeted CVD under the same tiny diagnostic configuration.
+
+| Variant | Params | Final loss | Eval loss | Cross-block use loss |
+|---|---:|---:|---:|---:|
+| `random_dropout_control` | 6976 | 3.7325 (0.0610) | 3.6748 (0.0448) | 3.8846 (0.2214) |
+| `variable_cvd` | 6976 | 3.7325 (0.0610) | 3.6748 (0.0448) | 3.8846 (0.2214) |
+
+Mean variable-minus-random final-loss delta: -2.8e-6. Mean variable-minus-random cross-block delta: 1.6e-6.
 
 ## Transformer Block-Size Smoke Sweep
 
@@ -108,11 +119,10 @@ Seeds 1-3 use block size 8 and the same 12-step CPU diagnostic. Values are means
 
 - This confirms forward/backward, AST gate, prefix block graph, boundary mixing, CVD scopes, dense FFN, and MoE fallback can train on the local machine.
 - Block sizes 4, 8, and 16 all completed the tiny diagnostic run.
-- Seeds 1, 2, and 3 all completed the tiny diagnostic run for transformer_baseline, transformer_matched, ast_graph, variable_cvd, and full_moe.
+- Seeds 1, 2, 3, 4, and 5 all completed the tiny diagnostic run for transformer_baseline, transformer_matched, ast_graph, variable_cvd, and full_moe.
 - This does not show model superiority; the run is too small and stochastic.
 - The pure Transformer baseline is now an explicit independent model, not a disabled CSMT configuration.
 - A rough parameter-neighbor Transformer control has 6992 parameters, close to ast_graph at 6960 and variable_cvd at 6976 in the tiny setting.
 - On the seed-7 block-8 run, CSMT graph variants improve cross-block use loss over token_baseline, but the pure and matched Transformers remain strong controls.
-- Across seeds 1-3, transformer_matched and ast_graph are very close on mean cross-block use loss; this is a comparison starting point, not evidence that CSMT-GNN beats Transformer.
-- Variable CVD remains unstable in the tiny diagnostic and should not be claimed as beneficial without a larger, dependency-specific test.
-- Random CVD and variable CVD remain extremely close on the seed-7 12-step diagnostic, so CVD benefit is not established.
+- Across seeds 1-5, ast_graph has the lowest mean cross-block use loss, but transformer_matched is close and has high variance; this is a comparison starting point, not evidence that CSMT-GNN beats Transformer.
+- Random CVD and variable CVD remain numerically almost identical across the five-seed control, so CVD benefit is not established.

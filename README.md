@@ -212,6 +212,19 @@ same prefix used by the next-token input. Its JSON output includes
 `prefix_feature_audit`, which records the number of checked cases, token-level
 mask cases, maximum prefix widths, and any prefix-alignment violations.
 
+Summarize several tiny diagnostic runs into compact JSON and Markdown tables:
+
+```powershell
+python scripts\summarize_diagnostics.py `
+  --inputs results\diagnostic_poc_transformer_seed1.json `
+           results\diagnostic_poc_transformer_seed2.json `
+           results\diagnostic_poc_transformer_seed3.json `
+           results\diagnostic_poc_transformer_seed4.json `
+           results\diagnostic_poc_transformer_seed5.json `
+  --output results\diagnostic_seed_sweep_1_5.json `
+  --markdown-output results\diagnostic_seed_sweep_1_5.md
+```
+
 This repository now includes one local diagnostic run:
 
 ```powershell
@@ -221,8 +234,10 @@ type results\lowcompute_validation_summary.md
 That run verifies that the reference paths train end to end on CPU, including
 AST gate, block graph, boundary mixing, CVD, dense FFN, MoE fallback, and the
 two token-only Transformer controls. It also records structural coverage and
-CVD sampling audits. It is not a benchmark result and does not establish that
-CSMT-GNN beats Transformer or that CVD improves accuracy.
+CVD sampling audits. The current seed sweep covers seeds 1-5 for the main
+Transformer/CSMT diagnostic variants, and a separate random-vs-variable CVD
+control also covers seeds 1-5. It is not a benchmark result and does not
+establish that CSMT-GNN beats Transformer or that CVD improves accuracy.
 
 Train on paired token and AST arrays:
 

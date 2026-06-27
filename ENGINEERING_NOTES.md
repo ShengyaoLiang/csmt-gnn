@@ -112,7 +112,7 @@ rewrite.
 ## Minimal Checks
 
 ```powershell
-python -m py_compile ast_preprocessor.py csmt_gnn.py transformer_baseline.py train.py inference_ast.py diagnostics.py scripts\architecture_cost_table.py scripts\prefix_ast_degradation.py scripts\structural_probe_eval.py scripts\cvd_mask_audit.py scripts\validate_data_pipeline.py scripts\diagnostic_poc_train.py scripts\build_github_release_package.py scripts\build_arxiv_package.py
+python -m py_compile ast_preprocessor.py csmt_gnn.py transformer_baseline.py train.py inference_ast.py diagnostics.py scripts\architecture_cost_table.py scripts\prefix_ast_degradation.py scripts\structural_probe_eval.py scripts\cvd_mask_audit.py scripts\validate_data_pipeline.py scripts\diagnostic_poc_train.py scripts\summarize_diagnostics.py scripts\build_github_release_package.py scripts\build_arxiv_package.py
 python scripts\build_arxiv_package.py
 python scripts\build_github_release_package.py
 ```
@@ -135,6 +135,7 @@ When PyTorch is available:
 ```powershell
 python scripts\cvd_mask_audit.py --steps 24 --hidden-size 16 --ast-dim 8 --block-size 8 --max-tokens 64
 python scripts\diagnostic_poc_train.py --steps 12 --output results\diagnostic_poc_transformer.json
+python scripts\summarize_diagnostics.py --inputs results\diagnostic_poc_transformer_seed1.json results\diagnostic_poc_transformer_seed2.json results\diagnostic_poc_transformer_seed3.json results\diagnostic_poc_transformer_seed4.json results\diagnostic_poc_transformer_seed5.json --output results\diagnostic_seed_sweep_1_5.json --markdown-output results\diagnostic_seed_sweep_1_5.md
 ```
 
 ## Remaining Risks

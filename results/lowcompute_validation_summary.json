@@ -10,7 +10,7 @@
   },
   "stage0": {
     "py_compile": "passed",
-    "unit_tests": "37/37 passed with PyTorch CPU after CVD audit, input-range fast-path, data-pipeline preflight hardening, and token-level CVD mask regression coverage",
+    "unit_tests": "41/41 passed with PyTorch CPU after five-seed diagnostic summary integration, CVD audit, input-range fast-path, data-pipeline preflight hardening, and token-level CVD mask regression coverage",
     "data_pipeline_preflight": "passed on 3 tiny diagnostic samples; token ids, AST ids, AST block shapes, masks, and usable lengths were valid",
     "definition_mask_tests": "passed; assignment, parameters, imports, attributes, destructuring, for-targets, and use-only negatives covered",
     "structural_probe_eval": {
@@ -337,18 +337,18 @@
         }
       ]
     },
-    "random_vs_variable_cvd_final_loss_diff": -7.43865966796875e-05,
+    "random_vs_variable_cvd_final_loss_diff": -2.8133392333984377e-06,
     "interpretation": [
       "This confirms forward/backward, AST gate, prefix block graph, boundary mixing, CVD scopes, dense FFN, and MoE fallback can train on the local machine.",
       "Block sizes 4, 8, and 16 all completed the tiny diagnostic run.",
-      "Seeds 1, 2, and 3 all completed the tiny diagnostic run for transformer_baseline, transformer_matched, ast_graph, variable_cvd, and full_moe.",
+      "Seeds 1, 2, 3, 4, and 5 all completed the tiny diagnostic run for transformer_baseline, transformer_matched, ast_graph, variable_cvd, and full_moe.",
       "This does not show model superiority; the run is too small and stochastic.",
-      "Random CVD and variable CVD remain extremely close on the seed-7 12-step diagnostic, so CVD benefit is not established.",
+      "Random CVD and variable CVD remain numerically almost identical across the five-seed control, so CVD benefit is not established.",
       "The pure Transformer baseline is now an explicit independent model, not a disabled CSMT configuration.",
       "A rough parameter-neighbor Transformer control has 6992 parameters, close to ast_graph at 6960 and variable_cvd at 6976 in the tiny setting.",
       "On the seed-7 block-8 run, CSMT graph variants improve cross-block use loss over token_baseline, but the pure and matched Transformers remain strong controls.",
-      "Across seeds 1-3, transformer_matched and ast_graph are very close on mean cross-block use loss; this is a comparison starting point, not evidence that CSMT-GNN beats Transformer.",
-      "Variable CVD remains unstable in the tiny diagnostic and should not be claimed as beneficial without a larger, dependency-specific test."
+      "Across seeds 1-5, ast_graph has the lowest mean cross-block use loss, but transformer_matched is close and high-variance; this is a comparison starting point, not evidence that CSMT-GNN beats Transformer.",
+      "Variable CVD should not be claimed as beneficial from this diagnostic; the five-seed random-vs-variable control is effectively tied."
     ],
     "transformer_comparison": {
       "diagnostic_poc_transformer": "passed; includes pure token-only Transformer baseline and a rough parameter-neighbor Transformer control; hidden_size=16, max_tokens=64, steps=12, CPU",
@@ -730,109 +730,187 @@
           }
         ]
       },
-      "seed_1_3_summary": {
-        "transformer_baseline": {
-          "params": 4688,
-          "final_loss": {
-            "mean": 3.7679901917775473,
-            "pstdev": 0.012094464461961565
-          },
-          "eval_loss": {
-            "mean": 3.6536041100819907,
-            "pstdev": 0.0215193210235201
-          },
-          "definition_use_loss": {
-            "mean": 3.7189918094211154,
-            "pstdev": 0.11334769705459478
-          },
-          "cross_block_use_loss": {
-            "mean": 3.6738745901319714,
-            "pstdev": 0.12134834888191001
-          }
-        },
-        "transformer_matched": {
-          "params": 6992,
-          "final_loss": {
-            "mean": 3.688540458679199,
-            "pstdev": 0.08319541144146422
-          },
-          "eval_loss": {
-            "mean": 3.66609517733256,
-            "pstdev": 0.09207239270303083
-          },
-          "definition_use_loss": {
-            "mean": 3.5063536961873374,
-            "pstdev": 0.29179233891838663
-          },
-          "cross_block_use_loss": {
-            "mean": 3.5242805745866566,
-            "pstdev": 0.3130602867987616
-          }
-        },
-        "ast_graph": {
-          "params": 6960,
-          "final_loss": {
-            "mean": 3.6776787439982095,
-            "pstdev": 0.0954717879509239
-          },
-          "eval_loss": {
-            "mean": 3.6599349445766873,
-            "pstdev": 0.07958443588971394
-          },
-          "definition_use_loss": {
-            "mean": 3.4966281519995794,
-            "pstdev": 0.15357377524535668
-          },
-          "cross_block_use_loss": {
-            "mean": 3.536640352673001,
-            "pstdev": 0.2760951986788033
-          }
-        },
-        "variable_cvd": {
-          "params": 6976,
-          "final_loss": {
-            "mean": 3.744609832763672,
-            "pstdev": 0.05141636897504421
-          },
-          "eval_loss": {
-            "mean": 3.684321509467231,
-            "pstdev": 0.027616770113021258
-          },
-          "definition_use_loss": {
-            "mean": 3.8237305217319064,
-            "pstdev": 0.23159512018002604
-          },
-          "cross_block_use_loss": {
-            "mean": 3.8470974763234453,
-            "pstdev": 0.2793774449189528
-          }
-        },
-        "full_moe": {
-          "params": 8160,
-          "final_loss": {
-            "mean": 3.6760544776916504,
-            "pstdev": 0.04120703992604766
-          },
-          "eval_loss": {
-            "mean": 3.6085352897644043,
-            "pstdev": 0.0553528187741353
-          },
-          "definition_use_loss": {
-            "mean": 3.721254905064901,
-            "pstdev": 0.0688183674401545
-          },
-          "cross_block_use_loss": {
-            "mean": 3.7173398865593805,
-            "pstdev": 0.12189626371190797
-          }
-        }
-      },
       "interpretation": [
         "The pure Transformer baseline is now an explicit independent model, not a disabled CSMT configuration.",
         "A rough parameter-neighbor Transformer control has 6992 parameters, close to ast_graph at 6960 and variable_cvd at 6976 in the tiny setting.",
         "On the seed-7 block-8 run, CSMT graph variants improve cross-block use loss over token_baseline, but the pure and matched Transformers remain strong controls.",
-        "Across seeds 1-3, transformer_matched and ast_graph are very close on mean cross-block use loss; this is a comparison starting point, not evidence that CSMT-GNN beats Transformer.",
-        "Variable CVD remains unstable in the tiny diagnostic and should not be claimed as beneficial without a larger, dependency-specific test."
+        "Across seeds 1-5, ast_graph has the lowest mean cross-block use loss, but transformer_matched is close and high-variance; this is a comparison starting point, not evidence that CSMT-GNN beats Transformer.",
+        "Variable CVD should not be claimed as beneficial from this diagnostic; the five-seed random-vs-variable control is effectively tied."
+      ],
+      "seed_1_5_summary": {
+        "purpose": "seed-sweep summary for tiny diagnostics; not a benchmark",
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "variants": [
+          {
+            "variant": "transformer_baseline",
+            "params": 4688,
+            "num_seeds": 5,
+            "final_loss_mean": 3.746630907058716,
+            "final_loss_std": 0.0664209807042564,
+            "eval_loss_mean": 3.654055039087931,
+            "eval_loss_std": 0.04388056540851517,
+            "cross_block_use_loss_mean": 3.793907578786214,
+            "cross_block_use_loss_std": 0.19637960097699178
+          },
+          {
+            "variant": "transformer_matched",
+            "params": 6992,
+            "num_seeds": 5,
+            "final_loss_mean": 3.7029356956481934,
+            "final_loss_std": 0.06730219864948901,
+            "eval_loss_mean": 3.639583158493042,
+            "eval_loss_std": 0.08017337351529627,
+            "cross_block_use_loss_mean": 3.565492312113444,
+            "cross_block_use_loss_std": 0.3241109998822436
+          },
+          {
+            "variant": "ast_graph",
+            "params": 6960,
+            "num_seeds": 5,
+            "final_loss_mean": 3.6608272075653074,
+            "final_loss_std": 0.08356763145095222,
+            "eval_loss_mean": 3.6345507780710857,
+            "eval_loss_std": 0.06927128065236547,
+            "cross_block_use_loss_mean": 3.5088687737782798,
+            "cross_block_use_loss_std": 0.244051160303794
+          },
+          {
+            "variant": "variable_cvd",
+            "params": 6976,
+            "num_seeds": 5,
+            "final_loss_mean": 3.732537031173706,
+            "final_loss_std": 0.06101422079143139,
+            "eval_loss_mean": 3.674821869532267,
+            "eval_loss_std": 0.04484830650997438,
+            "cross_block_use_loss_mean": 3.884605566660563,
+            "cross_block_use_loss_std": 0.22144216023766927
+          },
+          {
+            "variant": "full_moe",
+            "params": 8160,
+            "num_seeds": 5,
+            "final_loss_mean": 3.7526155948638915,
+            "final_loss_std": 0.09938367801860899,
+            "eval_loss_mean": 3.649100828170776,
+            "eval_loss_std": 0.06567013251651402,
+            "cross_block_use_loss_mean": 3.629607391357422,
+            "cross_block_use_loss_std": 0.18062388669848886
+          }
+        ],
+        "interpretation": "ast_graph has the lowest mean cross-block use loss in this tiny diagnostic, but transformer_matched is close and high-variance; this is not a benchmark."
+      },
+      "random_vs_variable_cvd_1_5_summary": {
+        "seeds": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "final_loss_delta_variable_minus_random_mean": -2.8133392333984377e-06,
+        "final_loss_delta_variable_minus_random_std": 5.522671891752682e-06,
+        "cross_block_delta_variable_minus_random_mean": 1.5576680499229667e-06,
+        "cross_block_delta_variable_minus_random_std": 7.881784717273227e-06,
+        "interpretation": "Random block replacement and variable-targeted CVD are effectively tied in this tiny diagnostic; CVD benefit is not established."
+      }
+    },
+    "seed_1_5_summary": {
+      "purpose": "seed-sweep summary for tiny diagnostics; not a benchmark",
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "variants": [
+        {
+          "variant": "transformer_baseline",
+          "params": 4688,
+          "num_seeds": 5,
+          "final_loss_mean": 3.746630907058716,
+          "final_loss_std": 0.0664209807042564,
+          "eval_loss_mean": 3.654055039087931,
+          "eval_loss_std": 0.04388056540851517,
+          "cross_block_use_loss_mean": 3.793907578786214,
+          "cross_block_use_loss_std": 0.19637960097699178
+        },
+        {
+          "variant": "transformer_matched",
+          "params": 6992,
+          "num_seeds": 5,
+          "final_loss_mean": 3.7029356956481934,
+          "final_loss_std": 0.06730219864948901,
+          "eval_loss_mean": 3.639583158493042,
+          "eval_loss_std": 0.08017337351529627,
+          "cross_block_use_loss_mean": 3.565492312113444,
+          "cross_block_use_loss_std": 0.3241109998822436
+        },
+        {
+          "variant": "ast_graph",
+          "params": 6960,
+          "num_seeds": 5,
+          "final_loss_mean": 3.6608272075653074,
+          "final_loss_std": 0.08356763145095222,
+          "eval_loss_mean": 3.6345507780710857,
+          "eval_loss_std": 0.06927128065236547,
+          "cross_block_use_loss_mean": 3.5088687737782798,
+          "cross_block_use_loss_std": 0.244051160303794
+        },
+        {
+          "variant": "variable_cvd",
+          "params": 6976,
+          "num_seeds": 5,
+          "final_loss_mean": 3.732537031173706,
+          "final_loss_std": 0.06101422079143139,
+          "eval_loss_mean": 3.674821869532267,
+          "eval_loss_std": 0.04484830650997438,
+          "cross_block_use_loss_mean": 3.884605566660563,
+          "cross_block_use_loss_std": 0.22144216023766927
+        },
+        {
+          "variant": "full_moe",
+          "params": 8160,
+          "num_seeds": 5,
+          "final_loss_mean": 3.7526155948638915,
+          "final_loss_std": 0.09938367801860899,
+          "eval_loss_mean": 3.649100828170776,
+          "eval_loss_std": 0.06567013251651402,
+          "cross_block_use_loss_mean": 3.629607391357422,
+          "cross_block_use_loss_std": 0.18062388669848886
+        }
+      ],
+      "interpretation": "ast_graph has the lowest mean cross-block use loss in this tiny diagnostic, but transformer_matched is close and high-variance; this is not a benchmark."
+    },
+    "random_vs_variable_cvd_1_5_summary": {
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "final_loss_delta_variable_minus_random_mean": -2.8133392333984377e-06,
+      "final_loss_delta_variable_minus_random_std": 5.522671891752682e-06,
+      "cross_block_delta_variable_minus_random_mean": 1.5576680499229667e-06,
+      "cross_block_delta_variable_minus_random_std": 7.881784717273227e-06,
+      "interpretation": "Random block replacement and variable-targeted CVD are effectively tied in this tiny diagnostic; CVD benefit is not established."
+    },
+    "random_vs_variable_cvd_cross_block_diff": 1.5576680499229667e-06,
+    "diagnostic_summary_files": {
+      "seed_sweep_1_5": [
+        "results/diagnostic_seed_sweep_1_5.json",
+        "results/diagnostic_seed_sweep_1_5.md"
+      ],
+      "cvd_control_1_5": [
+        "results/diagnostic_cvd_control_1_5.json",
+        "results/diagnostic_cvd_control_1_5.md"
       ]
     }
   },

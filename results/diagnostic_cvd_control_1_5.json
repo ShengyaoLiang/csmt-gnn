@@ -1,0 +1,147 @@
+{
+  "purpose": "seed-sweep summary for tiny diagnostics; not a benchmark",
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "variants": [
+    {
+      "variant": "random_dropout_control",
+      "params": 6976,
+      "num_seeds": 5,
+      "metrics": {
+        "final_loss": {
+          "mean": 3.7325395584106444,
+          "std": 0.0610154571778754,
+          "values": [
+            3.676520824432373,
+            3.800764799118042,
+            3.7565512657165527,
+            3.7836735248565674,
+            3.6451873779296875
+          ]
+        },
+        "eval_loss": {
+          "mean": 3.6748231252034502,
+          "std": 0.04484735791352588,
+          "values": [
+            3.667240778605143,
+            3.6624488035837808,
+            3.723277966181437,
+            3.7201217810312905,
+            3.6010262966156006
+          ]
+        },
+        "definition_use_loss": {
+          "mean": 3.856545416514079,
+          "std": 0.18607254428341424,
+          "values": [
+            3.90063468615214,
+            3.509538253148397,
+            4.06096879641215,
+            3.8604185581207275,
+            3.951166788736979
+          ]
+        },
+        "cross_block_use_loss": {
+          "mean": 3.884602689743042,
+          "std": 0.22143394039297065,
+          "values": [
+            3.9422508080800376,
+            3.4674344857533774,
+            4.131593704223633,
+            3.925433874130249,
+            3.9563005765279136
+          ]
+        }
+      }
+    },
+    {
+      "variant": "variable_cvd",
+      "params": 6976,
+      "num_seeds": 5,
+      "metrics": {
+        "final_loss": {
+          "mean": 3.7325367450714113,
+          "std": 0.06101389250173514,
+          "values": [
+            3.676520824432373,
+            3.8007521629333496,
+            3.7565550804138184,
+            3.783672332763672,
+            3.6451833248138428
+          ]
+        },
+        "eval_loss": {
+          "mean": 3.674821901321411,
+          "std": 0.04484795501128463,
+          "values": [
+            3.667240778605143,
+            3.6624459425608316,
+            3.723277966181437,
+            3.720120588938395,
+            3.6010242303212485
+          ]
+        },
+        "definition_use_loss": {
+          "mean": 3.8565539836883547,
+          "std": 0.18606781211061343,
+          "values": [
+            3.90063468615214,
+            3.5095605850219727,
+            4.060981671015422,
+            3.8604186375935874,
+            3.951174338658651
+          ]
+        },
+        "cross_block_use_loss": {
+          "mean": 3.884604247411092,
+          "std": 0.22144079312350762,
+          "values": [
+            3.9422508080800376,
+            3.46742574373881,
+            4.131609280904134,
+            3.925433079401652,
+            3.9563023249308267
+          ]
+        }
+      }
+    }
+  ],
+  "random_vs_variable_cvd": {
+    "seeds": [
+      {
+        "seed": 1,
+        "final_loss_delta_variable_minus_random": 0.0,
+        "cross_block_delta_variable_minus_random": 0.0
+      },
+      {
+        "seed": 2,
+        "final_loss_delta_variable_minus_random": -1.2636184692382812e-05,
+        "cross_block_delta_variable_minus_random": -8.742014567353351e-06
+      },
+      {
+        "seed": 3,
+        "final_loss_delta_variable_minus_random": 3.814697265625e-06,
+        "cross_block_delta_variable_minus_random": 1.5576680501006024e-05
+      },
+      {
+        "seed": 4,
+        "final_loss_delta_variable_minus_random": -1.1920928955078125e-06,
+        "cross_block_delta_variable_minus_random": -7.947285971532381e-07
+      },
+      {
+        "seed": 5,
+        "final_loss_delta_variable_minus_random": -4.0531158447265625e-06,
+        "cross_block_delta_variable_minus_random": 1.7484029131153989e-06
+      }
+    ],
+    "final_loss_delta_variable_minus_random_mean": -2.8133392333984377e-06,
+    "final_loss_delta_variable_minus_random_std": 5.522671891752682e-06,
+    "cross_block_delta_variable_minus_random_mean": 1.5576680499229667e-06,
+    "cross_block_delta_variable_minus_random_std": 7.881784717273227e-06
+  }
+}

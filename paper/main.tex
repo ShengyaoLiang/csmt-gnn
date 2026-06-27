@@ -1130,7 +1130,7 @@ On my local laptop, I ran this diagnostic at
 \texttt{hidden\_size=16}, \texttt{max\_tokens=64}, and 12 steps per variant,
 plus small block-size and seed smoke sweeps.  The diagnostic now includes a pure
 token-only Transformer and a rough parameter-neighbor Transformer control.  The
-unit tests now pass at 39/39 after adding fail-fast checks for the Transformer
+unit tests now pass at 41/41 after adding fail-fast checks for the Transformer
 controls, incremental AST configuration checks, opt-in CVD audit coverage,
 validated-pipeline input range controls, graph padding-mask coverage, trainer
 prefix-trim coverage, diagnostic prefix-audit coverage, and a regression test
@@ -1143,11 +1143,11 @@ sequence lengths.
 The structural probe found cross-block definition-use pairs in all three
 diagnostic cases.  The CVD audit recorded 72 variable-eligible blocks and 112
 random-control eligible blocks over 24 audited steps, with both sampling rates
-near the configured 0.2.  The tiny training run showed that random CVD and
-variable CVD were almost identical in final next-token loss.  I treat this
-record only as a mechanism and plumbing check: it shows that the reference paths
-can train on CPU and that the masks are observable, not that the architecture is
-better than a baseline.
+near the configured 0.2.  A five-seed CVD control showed that random block
+replacement and variable-targeted CVD are numerically almost identical in this
+tiny setting.  I treat this record only as a mechanism and plumbing check: it
+shows that the reference paths can train on CPU and that the masks are
+observable, not that the architecture is better than a baseline.
 
 \begin{table}[t]
   \centering
@@ -1173,7 +1173,7 @@ better than a baseline.
 
 \begin{table}[t]
   \centering
-  \caption{Seed 1--3 mean local diagnostic results at block size 8.  Parentheses
+  \caption{Seed 1--5 mean local diagnostic results at block size 8.  Parentheses
   show population standard deviation.  The close result between
   \texttt{transformer\_matched} and \texttt{ast\_graph} is why I do not claim a
   Transformer win or a CSMT-GNN win from this run.}
@@ -1183,23 +1183,26 @@ better than a baseline.
     \toprule
     Variant & Params & Final loss & Cross-block use loss \\
     \midrule
-    \texttt{transformer\_baseline} & 4688 & 3.7680 (0.0121) & 3.6739 (0.1213) \\
-    \texttt{transformer\_matched} & 6992 & 3.6885 (0.0832) & 3.5243 (0.3131) \\
-    \texttt{ast\_graph} & 6960 & 3.6777 (0.0955) & 3.5366 (0.2761) \\
-    \texttt{variable\_cvd} & 6976 & 3.7446 (0.0514) & 3.8471 (0.2794) \\
-    \texttt{full\_moe} & 8160 & 3.6761 (0.0412) & 3.7173 (0.1219) \\
+    \texttt{transformer\_baseline} & 4688 & 3.7466 (0.0664) & 3.7939 (0.1964) \\
+    \texttt{transformer\_matched} & 6992 & 3.7029 (0.0673) & 3.5655 (0.3241) \\
+    \texttt{ast\_graph} & 6960 & 3.6608 (0.0836) & 3.5089 (0.2441) \\
+    \texttt{variable\_cvd} & 6976 & 3.7325 (0.0610) & 3.8846 (0.2214) \\
+    \texttt{full\_moe} & 8160 & 3.7526 (0.0994) & 3.6296 (0.1806) \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 My reading of these numbers is cautious.  On the seed-7 run, block-graph
 variants improve the cross-block use loss over the CSMT token baseline.  Across
-seeds 1--3, however, the rough parameter-neighbor Transformer and
-\texttt{ast\_graph} are essentially tied on mean cross-block use loss.  CVD is
-also unstable in this tiny setup.  This is exactly the kind of result I wanted
-the diagnostic to be able to show: the architecture is now comparable against a
-real Transformer control, but it has not earned a claim that it beats
-Transformer.
+seeds 1--5, \texttt{ast\_graph} has the lowest mean cross-block use loss in this
+tiny diagnostic, but the rough parameter-neighbor Transformer is close and has a
+large standard deviation.  A separate seed 1--5 control gives
+\texttt{random\_dropout\_control} and \texttt{variable\_cvd} the same rounded
+final loss, eval loss, and cross-block use loss; the mean variable-minus-random
+final-loss delta is only $-2.8\times 10^{-6}$.  This is exactly the kind of
+result I wanted the diagnostic to be able to show: the architecture is now
+comparable against a real Transformer control, but it has not earned a claim
+that it beats Transformer or that CVD is better than random block replacement.
 
 The arXiv source package is built with:
 \begin{verbatim}
