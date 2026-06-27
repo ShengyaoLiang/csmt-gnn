@@ -14,11 +14,11 @@ submission notes, arXiv source packaging, and a public GitHub release builder.
 The public reproducibility repository is available at
 https://github.com/ShengyaoLiang/csmt-gnn. The current public release line is
 `v0.1.3`. Archived releases are indexed under the stable all-version Zenodo
-concept DOI https://doi.org/10.5281/zenodo.20840624. The new `v0.1.3` version
-DOI should be recorded after Zenodo archives the GitHub release. I release the
-source package, paper source, tests, small diagnostic artifacts, and packaging
-scripts so that the evidence chain can be inspected without relying on private
-training data, hidden scripts, or unpublished checkpoints.
+concept DOI https://doi.org/10.5281/zenodo.20840624. The `v0.1.3` archived
+version DOI is https://doi.org/10.5281/zenodo.20961001. I release the source
+package, paper source, tests, small diagnostic artifacts, and packaging scripts
+so that the evidence chain can be inspected without relying on private training
+data, hidden scripts, or unpublished checkpoints.
 
 ## Scientific Position
 

@@ -69,9 +69,9 @@
     "data_pipeline_preflight": "passed on 3 tiny diagnostic samples; results/data_pipeline_validation.json written",
     "diagnostics_smoke": "passed; generated shadowing, long_range_import, and guarded_attribute arrays with refined Python-binding definition masks",
     "prefix_ast_smoke": "passed with tree-sitter in .venv-lowcompute; inference_ast.py avg_ms=1.555 over repeat=32 on prefix_probe.py",
-    "paper_compile": "passed with Docker TeX Live on 2026-06-27 after structural preservation and block-size sensitivity integration; PDF is 17 pages; final log has no real warnings",
-    "paper_text_scan": "passed after structural preservation and block-size sensitivity integration; no stale target, formula-placeholder, or compute-apology remnants were found",
-    "paper_visual_check": "passed on rendered pages 1 and 17 after structural preservation and block-size sensitivity integration; no overlap or table overflow observed",
+    "paper_compile": "passed with Docker TeX Live on 2026-06-27 after recording the v0.1.3 Zenodo DOI; PDF is 17 pages",
+    "paper_text_scan": "passed after recording the v0.1.3 Zenodo DOI; no pending DOI, stale DOI, formula-placeholder, or compute-apology remnants were found",
+    "paper_visual_check": "not rerendered after DOI-only update; prior rendered pages 1 and 17 passed after v0.1.3 integration",
     "arxiv_package": "rebuilt after structural preservation and block-size sensitivity integration; upload_ready=true; zip integrity passed with 5 files",
     "github_release_package": "rebuilt in an isolated package-check directory after structural preservation and block-size sensitivity integration; zip integrity passed with 81 files",
     "prefix_ast_degradation": "passed with tree-sitter; fallback_rate=0.3846, unknown_rate=0.0000, prefix_full_divergence=0.4615, avg_ms=4.296 on tiny prefix_probe.py",
@@ -87,11 +87,12 @@
     "architecture_cost_table": "passed; results/architecture_cost_table.json records dense causal edge counts vs block-local plus block-graph edge counts; not a runtime benchmark",
     "quick_arch_update_diagnostic": "passed locally on CPU with transformer_baseline, ast_graph, and variable_cvd for 4 steps; results/diagnostic_poc_quick_arch_update.json written; not a benchmark",
     "structural_hallucination_eval": "passed with .venv-lowcompute on 2026-06-27; dependency_preservation_rate=1.0 and parse_success_rate=1.0 on bundled reference snippets",
-    "block_size_sensitivity_32_64_128": "passed with .venv-lowcompute on 2026-06-27; cross-block dependencies present at B=32,64,128, but both ast_graph and transformer_matched had 0.0 preservation and transformer_matched had lower cross-block loss"
+    "block_size_sensitivity_32_64_128": "passed with .venv-lowcompute on 2026-06-27; cross-block dependencies present at B=32,64,128, but both ast_graph and transformer_matched had 0.0 preservation and transformer_matched had lower cross-block loss",
+    "zenodo_v0_1_3_doi": "recorded after GitHub release archive: https://doi.org/10.5281/zenodo.20961001"
   },
   "reproducibility_links": {
     "public_repository": "https://github.com/ShengyaoLiang/csmt-gnn",
-    "zenodo_current_release_doi": "pending Zenodo version DOI for v0.1.3; use concept DOI until archived",
+    "zenodo_current_release_doi": "https://doi.org/10.5281/zenodo.20961001",
     "zenodo_all_version_concept_doi": "https://doi.org/10.5281/zenodo.20840624",
     "scope": "source package, paper source, tests, small diagnostic artifacts, and packaging scripts; no private training data or unpublished checkpoints required for the released evidence chain"
   }

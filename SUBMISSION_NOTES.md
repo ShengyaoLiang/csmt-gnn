@@ -53,9 +53,9 @@ The arXiv package includes `main.tex`, `main.bbl`, `references.bib`, and
 
 - Public repository: https://github.com/ShengyaoLiang/csmt-gnn.
 - Current release line: `v0.1.3`.
+- Current archived release DOI (`v0.1.3`): https://doi.org/10.5281/zenodo.20961001.
 - Archived releases are indexed under the stable all-version Zenodo concept DOI:
   https://doi.org/10.5281/zenodo.20840624.
-- The `v0.1.3` version DOI should be recorded after Zenodo archives the GitHub release.
 - Builder: `python scripts\build_github_release_package.py`.
 - Output directory: `build/github_release/`.
 - Output zip: `build/csmt_gnn_github_release.zip`.
